@@ -1,5 +1,6 @@
 using BusManager.Application;
 using BusManager.Infrastructure;
+using BusManager.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,9 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
+
+builder.Services.AddIdentityApiEndpoints<User>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 var app = builder.Build();
 
@@ -25,8 +29,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapControllers();
 app.UseHttpsRedirection();
+
+app.MapIdentityApi<User>();
+app.MapControllers();
 
 app.Run();
 

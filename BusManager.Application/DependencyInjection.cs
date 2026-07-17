@@ -10,6 +10,9 @@ namespace BusManager.Application
             this IServiceCollection services)
         {
             services.AddScoped<IBusService, BusService>();
+            services.AddScoped<IDriverService, DriverService>();
+
+
 
             return services;
         }

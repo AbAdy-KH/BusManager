@@ -7,7 +7,6 @@ namespace BusManager.Infrastructure.Repositories
     {
         public BusRepository(ApplicationDbContext db) : base(db)
         {
-            
         }        
     }
 }

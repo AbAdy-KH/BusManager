@@ -3,6 +3,9 @@ using BusManager.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using BusManager.Domain.Entities;
 
 namespace BusManager.Infrastructure;
 
@@ -20,7 +23,17 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString, b => 
                 b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
+        services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+            });
+
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IBusRepository, BusRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

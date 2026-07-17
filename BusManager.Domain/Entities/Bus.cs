@@ -11,7 +11,7 @@ public class Bus
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
     [Required]
-    public string PlateNumber { get; set; }
+    public string PlateNumber { get; set; } =  string.Empty;
 
     [Required]
     public int Capacity { get; set; }
