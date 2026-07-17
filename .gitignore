@@ -1,0 +1,29 @@
+# === .NET Build & Cache ===
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# === VS Code Settings ===
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# === Databases & Local Secrets ===
+*.db
+*.db-journal
+*.sqlite
+*.mdf
+*.ldf
+appsettings.Development.json
+
+# === OS-specific Files ===
+.DS_Store
+Thumbs.db
+
+# === Rider/Visual Studio specific ===
+.idea/
+.vs/
+
