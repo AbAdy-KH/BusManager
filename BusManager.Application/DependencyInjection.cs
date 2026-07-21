@@ -11,8 +11,7 @@ namespace BusManager.Application
         {
             services.AddScoped<IBusService, BusService>();
             services.AddScoped<IDriverService, DriverService>();
-
-
+            services.AddScoped<IAuthService, AuthService>();
 
             return services;
         }

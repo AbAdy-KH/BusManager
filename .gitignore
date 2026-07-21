@@ -18,6 +18,7 @@
 *.mdf
 *.ldf
 appsettings.Development.json
+appsettings.json
 
 # === OS-specific Files ===
 .DS_Store

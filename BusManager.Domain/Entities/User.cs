@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BusManager.Domain.Entities
 {
-    public enum Role { Admin = 1, Driver = 2, Student = 3 }
+    public enum UserRole { Admin = 1, Driver = 2, Student = 3 }
 
     public class User : IdentityUser
     {
@@ -12,7 +12,5 @@ namespace BusManager.Domain.Entities
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        public Role Role { get; set; }
     }
 }

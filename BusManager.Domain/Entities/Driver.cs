@@ -3,14 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusManager.Domain.Entities
 {
-    public class Driver
+    public class Driver : User
     {
-        [Key]
-        public string UserId { get; set; } = string.Empty;
-
-        [ForeignKey(nameof(UserId))]
-        public virtual User? User { get; set; }
-
         [Required]
         public string LicenseNumber { get; set; } = string.Empty;
 

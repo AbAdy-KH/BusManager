@@ -17,12 +17,16 @@ public class ApplicationDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
-        // 1. Rename the default Identity user table to match your domain
+        // 1. Rename User table
         modelBuilder.Entity<User>().ToTable("Users");
 
+        // 2. Restore and rename Role tables
+        modelBuilder.Entity<IdentityRole>().ToTable("Roles");
+        modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+
         // 2. Tell EF Core to completely ignore the tables you don't want
-        modelBuilder.Ignore<IdentityRole>();
-        modelBuilder.Ignore<IdentityUserRole<string>>();
+        // modelBuilder.Ignore<IdentityRole>();
+        // modelBuilder.Ignore<IdentityUserRole<string>>();
         modelBuilder.Ignore<IdentityUserClaim<string>>();
         modelBuilder.Ignore<IdentityUserLogin<string>>();
         modelBuilder.Ignore<IdentityRoleClaim<string>>();

@@ -15,7 +15,7 @@ namespace BusManager.Api.Controllers
             _busService = busService;
         }
         
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<Bus>>> GetAll()
         {
             var busList = await _busService.GetAllBuses();
