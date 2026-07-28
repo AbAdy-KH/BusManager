@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using BusManager.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using NetTopologySuite.Triangulate.Tri;
 
 public class ApplicationDbContext : IdentityDbContext<User>
 {
@@ -12,15 +13,18 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
     public DbSet<Driver> Drivers { get; set; }
     public DbSet<Bus> Buses { get; set; }  
+    public DbSet<StopPoint> StopPoints { get; set; }
+    public DbSet<Route> Routes { get; set; }
+    public DbSet<RouteStop> RouteStops { get; set; }
+    public DbSet<Trip> Trips { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // 1. Rename User table
+        // 1. Rename table
         modelBuilder.Entity<User>().ToTable("Users");
-
-        // 2. Restore and rename Role tables
         modelBuilder.Entity<IdentityRole>().ToTable("Roles");
         modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
 
@@ -31,6 +35,12 @@ public class ApplicationDbContext : IdentityDbContext<User>
         modelBuilder.Ignore<IdentityUserLogin<string>>();
         modelBuilder.Ignore<IdentityRoleClaim<string>>();
         modelBuilder.Ignore<IdentityUserToken<string>>();
+
+
+        // 1. Composite Primary Key for junction table
+        modelBuilder.Entity<RouteStop>()
+            .HasKey(rs => new { rs.RouteId, rs.StopPointId });
+
     }
 }
 

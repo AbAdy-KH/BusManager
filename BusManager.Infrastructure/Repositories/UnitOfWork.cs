@@ -9,12 +9,14 @@ namespace BusManager.Infrastructure.Repositories
         private readonly ApplicationDbContext _db;
         public IBusRepository Bus { get; private set; }
         public IDriverRepository Driver { get; private set; }
+        public IStopPointRepository Stop { get; private set; }
 
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
             Bus = new BusRepository(db);
             Driver = new DriverRepository(db);
+            Stop = new StopPointRepository(db);
         }
 
         public void Save()

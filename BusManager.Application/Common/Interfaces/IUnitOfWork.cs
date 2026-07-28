@@ -6,5 +6,6 @@ namespace BusManager.Application.Common.Interfaces
     {
         IBusRepository Bus { get; }
         IDriverRepository Driver { get; }
+        IStopPointRepository Stop { get; }
     }
 }

@@ -17,7 +17,12 @@ public static class DependencyInjection
         // 1. Retrieve the connection string
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-        // 2. Register your DbContext using SQL Server
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IDriverRepository, DriverRepository>();
+        services.AddScoped<IBusRepository, BusRepository>();
+        services.AddScoped<IStopPointRepository, StopPointRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString, b => 
                 b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
@@ -30,11 +35,6 @@ public static class DependencyInjection
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             });
-
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        services.AddScoped<IDriverRepository, DriverRepository>();
-        services.AddScoped<IBusRepository, BusRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

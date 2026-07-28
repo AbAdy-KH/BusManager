@@ -29,6 +29,9 @@ namespace BusManager.Infrastructure.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Number")
                         .HasColumnType("int");
 
@@ -36,12 +39,102 @@ namespace BusManager.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.ToTable("Buses");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.Route", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Routes");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.RouteStop", b =>
+                {
+                    b.Property<string>("RouteId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("StopPointId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("EstimatedMinutesFromStart")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SequenceOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("RouteId", "StopPointId");
+
+                    b.HasIndex("StopPointId");
+
+                    b.ToTable("RouteStops");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.StopPoint", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDropPoint")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Latitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StopPoints");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.Trip", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RouteId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("Trips");
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.User", b =>
@@ -180,6 +273,36 @@ namespace BusManager.Infrastructure.Migrations
                     b.HasDiscriminator().HasValue("Driver");
                 });
 
+            modelBuilder.Entity("BusManager.Domain.Entities.RouteStop", b =>
+                {
+                    b.HasOne("BusManager.Domain.Entities.Route", "Route")
+                        .WithMany("RouteStops")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusManager.Domain.Entities.StopPoint", "StopPoint")
+                        .WithMany()
+                        .HasForeignKey("StopPointId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Route");
+
+                    b.Navigation("StopPoint");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.Trip", b =>
+                {
+                    b.HasOne("BusManager.Domain.Entities.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Route");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -202,6 +325,11 @@ namespace BusManager.Infrastructure.Migrations
                         .HasForeignKey("BusId");
 
                     b.Navigation("Bus");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.Route", b =>
+                {
+                    b.Navigation("RouteStops");
                 });
 #pragma warning restore 612, 618
         }

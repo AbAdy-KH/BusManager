@@ -1,6 +1,5 @@
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Services.Interfaces;
-using BusManager.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusManager.Api.Controllers

@@ -11,6 +11,5 @@ namespace BusManager.Domain.Entities
 
         [Required]
         public string Name { get; set; } = string.Empty;
-
     }
 }
