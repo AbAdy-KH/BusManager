@@ -44,6 +44,40 @@ namespace BusManager.Infrastructure.Migrations
                     b.ToTable("Buses");
                 });
 
+            modelBuilder.Entity("BusManager.Domain.Entities.BusDriver", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BusId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusId");
+
+                    b.HasIndex("DriverId");
+
+                    b.ToTable("BusesDrivers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "11111111-1111-1111-1111-111111111111",
+                            BusId = "1",
+                            CreatedAt = new DateTime(2026, 8, 4, 7, 0, 0, 0, DateTimeKind.Utc),
+                            DriverId = "680955bb-da4e-4f6c-ab8b-f9ce8193fc02"
+                        });
+                });
+
             modelBuilder.Entity("BusManager.Domain.Entities.Route", b =>
                 {
                     b.Property<string>("Id")
@@ -62,6 +96,14 @@ namespace BusManager.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Routes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                            Code = "EX-101",
+                            Name = "Downtown Express"
+                        });
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.RouteStop", b =>
@@ -83,6 +125,29 @@ namespace BusManager.Infrastructure.Migrations
                     b.HasIndex("StopPointId");
 
                     b.ToTable("RouteStops");
+
+                    b.HasData(
+                        new
+                        {
+                            RouteId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                            StopPointId = "11111111-1111-1111-1111-111111111111",
+                            EstimatedMinutesFromStart = 0,
+                            SequenceOrder = 1
+                        },
+                        new
+                        {
+                            RouteId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                            StopPointId = "22222222-2222-2222-2222-222222222222",
+                            EstimatedMinutesFromStart = 10,
+                            SequenceOrder = 2
+                        },
+                        new
+                        {
+                            RouteId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                            StopPointId = "33333333-3333-3333-3333-333333333333",
+                            EstimatedMinutesFromStart = 25,
+                            SequenceOrder = 3
+                        });
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.StopPoint", b =>
@@ -116,6 +181,38 @@ namespace BusManager.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("StopPoints");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "11111111-1111-1111-1111-111111111111",
+                            Address = "123 Main St",
+                            IsActive = true,
+                            IsDropPoint = true,
+                            Latitude = 40.712776m,
+                            Longitude = -74.005974m,
+                            Name = "Central Station"
+                        },
+                        new
+                        {
+                            Id = "22222222-2222-2222-2222-222222222222",
+                            Address = "456 Market St",
+                            IsActive = true,
+                            IsDropPoint = true,
+                            Latitude = 40.713500m,
+                            Longitude = -74.004200m,
+                            Name = "City Market"
+                        },
+                        new
+                        {
+                            Id = "33333333-3333-3333-3333-333333333333",
+                            Address = "789 Innovation Way",
+                            IsActive = true,
+                            IsDropPoint = false,
+                            Latitude = 40.718900m,
+                            Longitude = -73.998000m,
+                            Name = "Tech Park"
+                        });
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.Trip", b =>
@@ -123,18 +220,55 @@ namespace BusManager.Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("ActualArrivalTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ActualStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BusDriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("RouteId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("ScheduledArrivalTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ScheduledStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BusDriverId");
 
                     b.HasIndex("RouteId");
 
                     b.ToTable("Trips");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "11111111-1111-1111-1111-111111111111",
+                            BusDriverId = "11111111-1111-1111-1111-111111111111",
+                            Direction = 0,
+                            Notes = "Afternoon return schedule.",
+                            RouteId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                            ScheduledArrivalTime = new DateTime(2026, 8, 4, 13, 0, 0, 0, DateTimeKind.Utc),
+                            ScheduledStartTime = new DateTime(2026, 8, 4, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 0
+                        });
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.User", b =>
@@ -261,16 +395,30 @@ namespace BusManager.Infrastructure.Migrations
                 {
                     b.HasBaseType("BusManager.Domain.Entities.User");
 
-                    b.Property<string>("BusId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("BusId");
-
                     b.HasDiscriminator().HasValue("Driver");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.BusDriver", b =>
+                {
+                    b.HasOne("BusManager.Domain.Entities.Bus", "Bus")
+                        .WithMany()
+                        .HasForeignKey("BusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusManager.Domain.Entities.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bus");
+
+                    b.Navigation("Driver");
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.RouteStop", b =>
@@ -294,11 +442,19 @@ namespace BusManager.Infrastructure.Migrations
 
             modelBuilder.Entity("BusManager.Domain.Entities.Trip", b =>
                 {
+                    b.HasOne("BusManager.Domain.Entities.BusDriver", "BusDriver")
+                        .WithMany()
+                        .HasForeignKey("BusDriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusManager.Domain.Entities.Route", "Route")
                         .WithMany()
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("BusDriver");
 
                     b.Navigation("Route");
                 });
@@ -316,15 +472,6 @@ namespace BusManager.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("BusManager.Domain.Entities.Driver", b =>
-                {
-                    b.HasOne("BusManager.Domain.Entities.Bus", "Bus")
-                        .WithMany()
-                        .HasForeignKey("BusId");
-
-                    b.Navigation("Bus");
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.Route", b =>

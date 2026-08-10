@@ -11,7 +11,6 @@ namespace BusManager.Domain.Entities
         [ForeignKey(nameof(StopPoint))]
         public string StopPointId { get; set; } = string.Empty;
         public StopPoint StopPoint { get; set; } = null!;
-
         
         public int SequenceOrder { get; set; }
         public int? EstimatedMinutesFromStart { get; set; }       

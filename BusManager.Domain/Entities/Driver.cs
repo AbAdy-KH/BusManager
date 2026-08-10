@@ -8,9 +8,9 @@ namespace BusManager.Domain.Entities
         [Required]
         public string LicenseNumber { get; set; } = string.Empty;
 
-        public string? BusId { get; set; }
+        // public string? BusId { get; set; }
 
-        [ForeignKey(nameof(BusId))]
-        public virtual Bus? Bus { get; set; }
+        // [ForeignKey(nameof(BusId))]
+        // public virtual Bus? Bus { get; set; }
     }
 }

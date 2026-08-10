@@ -20,7 +20,9 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IBusRepository, BusRepository>();
+        services.AddScoped<ITripRepository, TripRepository>();
         services.AddScoped<IStopPointRepository, StopPointRepository>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddDbContext<ApplicationDbContext>(options =>

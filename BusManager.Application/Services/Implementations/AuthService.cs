@@ -35,8 +35,7 @@ namespace BusManager.Application.Services.Implementations
                     UserName = dto.Email,
                     Email = dto.Email,
                     Name = dto.Name,
-                    LicenseNumber = dto.LicenseNumber,
-                    BusId = dto.BusId
+                    LicenseNumber = dto.LicenseNumber
                 },
                 _ => throw new ArgumentException("Invalid user type")
             };

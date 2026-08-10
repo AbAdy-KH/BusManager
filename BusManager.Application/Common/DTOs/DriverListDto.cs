@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BusManager.Application.Common.DTOs
 {
@@ -10,8 +5,6 @@ namespace BusManager.Application.Common.DTOs
     (
         string DriverId,
         string Name, 
-        string LicenseNumber,
-        string BusId,
-        int BusNumber
+        string LicenseNumber
     );
 }

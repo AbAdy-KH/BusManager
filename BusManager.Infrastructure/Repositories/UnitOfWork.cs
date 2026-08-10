@@ -10,6 +10,7 @@ namespace BusManager.Infrastructure.Repositories
         public IBusRepository Bus { get; private set; }
         public IDriverRepository Driver { get; private set; }
         public IStopPointRepository Stop { get; private set; }
+        public ITripRepository Trip { get; private set; }
 
         public UnitOfWork(ApplicationDbContext db)
         {
@@ -17,6 +18,7 @@ namespace BusManager.Infrastructure.Repositories
             Bus = new BusRepository(db);
             Driver = new DriverRepository(db);
             Stop = new StopPointRepository(db);
+            Trip = new TripRepository(db);
         }
 
         public void Save()

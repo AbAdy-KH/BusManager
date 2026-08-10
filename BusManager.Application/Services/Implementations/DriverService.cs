@@ -17,7 +17,7 @@ namespace BusManager.Application.Services.Implementations
 
         public async Task<IEnumerable<DriverListDto>> GetAllDrivers()
         {
-            var drivers = await _unitOfWork.Driver.GetAll(null, "Bus");
+            var drivers = await _unitOfWork.Driver.GetAll(null);
 
             List<DriverListDto> driverListDto = new List<DriverListDto>();
             foreach(var driver in drivers)
@@ -26,9 +26,7 @@ namespace BusManager.Application.Services.Implementations
                     new DriverListDto(
                         driver.Id,
                         driver.Name, 
-                        driver.LicenseNumber,
-                        driver.BusId,
-                        driver.Bus.Number
+                        driver.LicenseNumber
                     )
                 );
             }
