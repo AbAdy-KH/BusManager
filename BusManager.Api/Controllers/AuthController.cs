@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using BusManager.Application.Common.DTOs;
+using BusManager.Application.Common.DTOs.Auth;
 using BusManager.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,17 +36,36 @@ namespace BusManager.Api.Controllers
         }
     
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponseDto>> Login(LoginRequestDto dto)
+        public async Task<ActionResult<TokensDto>> Login(LoginRequestDto dto)
         {
             var result = await _authService.Login(dto);
 
-            if (result == null)
-            {
-                return Unauthorized("Unauthorized Access!");
-            }
+            if (result == null) return Unauthorized("Unauthorized access");
 
             return Ok(result);
         }
 
+        [HttpPost("refresh")]
+        public async Task<ActionResult<TokensDto>> Refresh (TokensDto dto)
+        {
+            var result = await _authService.Refresh(dto);
+
+            if (result == null) return Unauthorized("Unauthorized access");
+
+            return Ok(result);
+        }
+
+        [HttpGet("logout")]
+        public async Task<ActionResult> Logout(TokensDto dto)
+        {   
+            // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // if(string.IsNullOrEmpty(userId)) return Unauthorized(); 
+
+            bool result = await _authService.Logout(dto);
+
+            if (result == false) return BadRequest("Could not log out user.");
+
+            return Ok(new { Message = "User loged out successfully." });
+        }
     }
 }

@@ -7,6 +7,9 @@ using BusManager.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
+using BusManager.Application.Common.DTOs.Auth;
+
 
 namespace BusManager.Application.Services.Implementations
 {
@@ -54,7 +57,7 @@ namespace BusManager.Application.Services.Implementations
             return result;
         }
     
-        public async Task<LoginResponseDto> Login(LoginRequestDto dto)
+        public async Task<TokensDto?> Login(LoginRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null) return null;
@@ -62,14 +65,46 @@ namespace BusManager.Application.Services.Implementations
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!isPasswordValid) return null;
 
-            var roles = await _userManager.GetRolesAsync(user);
-            string token = _GenerateJwtToken(user, roles);
+            return await _GenerateAndSaveTokens(user);
+        }
 
-            return new LoginResponseDto(
-                Token: token,
-                UserId: user.Id,
-                Roles: roles
-            );
+        public async Task<TokensDto?> Refresh(TokensDto dto)
+        {
+            var principal = _GetPrincipalFromExpiredToken(dto.AccessToken);
+            if(principal == null) return null;
+
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(string.IsNullOrEmpty(userId)) return null;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if(user == null || user.RefreshTokenRevokedAt != null || user.RefreshTokenExpiresAt <= DateTime.UtcNow) return null;
+
+            bool isValidRefreshToken = BCrypt.Net.BCrypt.Verify(dto.RefreshToken, user.RefreshTokenHash);
+            if(!isValidRefreshToken) return null;
+
+            return await _GenerateAndSaveTokens(user);
+        }
+
+        public async Task<bool> Logout(TokensDto dto)
+        {
+            var principal = _GetPrincipalFromExpiredToken(dto.AccessToken);
+            if(principal == null) return false;
+
+            string? userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(string.IsNullOrEmpty(userId)) return false;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            bool isValidRefreshToken = BCrypt.Net.BCrypt.Verify(dto.RefreshToken, user.RefreshTokenHash);
+            if(!isValidRefreshToken) return false;
+
+            user.RefreshTokenHash = null;
+            user.RefreshTokenExpiresAt = null;
+            user.RefreshTokenRevokedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
         }
 
         private string _GenerateJwtToken(User user, IList<string> roles)
@@ -98,6 +133,56 @@ namespace BusManager.Application.Services.Implementations
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);            
+        }
+        
+        private string _GenerateRefreshToken()
+        {
+            var bytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
+        }
+
+        private async Task<TokensDto> _GenerateAndSaveTokens(User user)
+        {
+            string refreshToken = _GenerateRefreshToken();
+
+            user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
+            user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+            user.RefreshTokenRevokedAt = null;
+
+            await _userManager.UpdateAsync(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            string accessToken = _GenerateJwtToken(user, roles); 
+
+            return new TokensDto(
+                AccessToken: accessToken,
+                RefreshToken: refreshToken
+            );          
+        }
+        
+        private ClaimsPrincipal? _GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!)),
+                ValidateLifetime = false // IMPORTANT: ignore expiration date here
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken || 
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+
+            return principal;
         }
     }
 }

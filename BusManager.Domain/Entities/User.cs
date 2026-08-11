@@ -7,9 +7,11 @@ namespace BusManager.Domain.Entities
 
     public class User : IdentityUser
     {
-        // IdentityUser provides: Id, Email, PhoneNumber, and PasswordHash!
-
         [Required]
         public string Name { get; set; } = string.Empty;
+
+        public string RefreshTokenHash { get; set; }
+        public DateTime? RefreshTokenExpiresAt { get; set; }
+        public DateTime? RefreshTokenRevokedAt { get; set; }
     }
 }
