@@ -10,7 +10,7 @@ namespace BusManager.Domain.Entities
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        public string RefreshTokenHash { get; set; }
+        public string? RefreshTokenHash { get; set; }
         public DateTime? RefreshTokenExpiresAt { get; set; }
         public DateTime? RefreshTokenRevokedAt { get; set; }
     }

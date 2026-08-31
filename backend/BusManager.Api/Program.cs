@@ -5,6 +5,8 @@ using BusManager.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using System.Threading.RateLimiting;
+using BusManager.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,12 +37,44 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("AuthLimit", httpContext =>
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            });
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SignalRPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // your React dev server origin — change if different
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // required for SignalR
+    });
+});
+
 // Register Layers
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -57,9 +91,25 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRateLimiter();
+
+app.UseCors("SignalRPolicy");
+
 app.UseAuthentication(); // 1st: Who are you? (Extracts & checks JWT token)
 app.UseAuthorization();  // 2nd: Are you allowed? (Checks roles/claims)
 
 app.MapControllers();
+
+app.MapHub<TrackingHub>("/trackingHub");
+
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (context.Response.StatusCode == StatusCodes.Status429TooManyRequests)
+    {
+        await context.Response.WriteAsync("Too many login attempts. Please try again later.");
+    }
+});
 
 app.Run();

@@ -3,6 +3,7 @@ using BusManager.Application.Common.DTOs;
 using BusManager.Application.Common.DTOs.Auth;
 using BusManager.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BusManager.Api.Controllers
 {
@@ -36,6 +37,7 @@ namespace BusManager.Api.Controllers
         }
     
         [HttpPost("login")]
+        [EnableRateLimiting("AuthLimit")]
         public async Task<ActionResult<TokensDto>> Login(LoginRequestDto dto)
         {
             var result = await _authService.Login(dto);
@@ -46,6 +48,7 @@ namespace BusManager.Api.Controllers
         }
 
         [HttpPost("refresh")]
+        [EnableRateLimiting("AuthLimit")]
         public async Task<ActionResult<TokensDto>> Refresh (TokensDto dto)
         {
             var result = await _authService.Refresh(dto);
@@ -55,7 +58,7 @@ namespace BusManager.Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("logout")]
+        [HttpPost("logout")]
         public async Task<ActionResult> Logout(TokensDto dto)
         {   
             // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

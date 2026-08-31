@@ -326,7 +326,6 @@ namespace BusManager.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("RefreshTokenHash")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("RefreshTokenRevokedAt")
