@@ -104,16 +104,40 @@ namespace BusManager.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            // 1. Seed Bus with Id = "1"
+            migrationBuilder.InsertData(
+                table: "Buses",
+                columns: new[] { "Id", "PlateNumber", "Capacity", "Number", "IsActive" },
+                values: new object[] { "1", "BUS-101", 30, 101, true }
+            );
+
+            // 2. Seed Driver/User with Id = "680955bb-da4e-4f6c-ab8b-f9ce8193fc02"
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Name", "UserName", "Email", "EmailConfirmed", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled", "AccessFailedCount", "Discriminator" },
+                values: new object[] { 
+                    "680955bb-da4e-4f6c-ab8b-f9ce8193fc02", 
+                    "Default Driver", 
+                    "driver1", 
+                    "driver1@busmanager.com", 
+                    true, false, false, false, 0, 
+                    "Driver" 
+                }
+            );
+
+            // 3. Seed BusesDrivers relationship
             migrationBuilder.InsertData(
                 table: "BusesDrivers",
                 columns: new[] { "Id", "BusId", "CreatedAt", "DriverId" },
-                values: new object[] { "11111111-1111-1111-1111-111111111111", "1", new DateTime(2026, 8, 4, 7, 0, 0, 0, DateTimeKind.Utc), "680955bb-da4e-4f6c-ab8b-f9ce8193fc02" });
+                values: new object[] { "11111111-1111-1111-1111-111111111111", "1", new DateTime(2026, 8, 4, 7, 0, 0, 0, DateTimeKind.Utc), "680955bb-da4e-4f6c-ab8b-f9ce8193fc02" }
+            );
 
+            // 4. Seed Trip
             migrationBuilder.InsertData(
                 table: "Trips",
                 columns: new[] { "Id", "ActualArrivalTime", "ActualStartTime", "BusDriverId", "Notes", "RouteId", "ScheduledArrivalTime", "ScheduledStartTime", "Status" },
-                values: new object[] { "11111111-1111-1111-1111-111111111111", null, null, "11111111-1111-1111-1111-111111111111", "Afternoon return schedule.", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", new DateTime(2026, 8, 4, 13, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 8, 4, 12, 0, 0, 0, DateTimeKind.Utc), 0 });
-
+                values: new object[] { "11111111-1111-1111-1111-111111111111", null, null, "11111111-1111-1111-1111-111111111111", "Afternoon return schedule.", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", new DateTime(2026, 8, 4, 13, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 8, 4, 12, 0, 0, 0, DateTimeKind.Utc), 0 }
+            );
             migrationBuilder.CreateIndex(
                 name: "IX_Trips_BusDriverId",
                 table: "Trips",

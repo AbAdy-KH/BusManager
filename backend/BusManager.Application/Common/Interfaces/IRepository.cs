@@ -10,5 +10,6 @@ namespace BusManager.Application.Common.Interfaces
         void Delete (T entity);
         Task<T?> Get (Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true);
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null);
+        
     }
 }
