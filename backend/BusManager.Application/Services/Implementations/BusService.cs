@@ -1,3 +1,4 @@
+using BusManager.Application.Common.DTOs;
 using BusManager.Application.Common.Interfaces;
 using BusManager.Application.Services.Interfaces;
 using BusManager.Domain.Entities;
@@ -21,13 +22,19 @@ namespace BusManager.Application.Services.Implementations
             return await _unitOfWork.Bus.Get(u => u.Id == BusId);
         }
 
-        public async Task<Bus> CreateBus(Bus bus)
+        public async Task<bool> CreateBus(BusDto busDto)
         {
 
-            bus.Id = Guid.NewGuid().ToString();
-            _unitOfWork.Bus.Add(bus);
-            _unitOfWork.Save();
-            return bus;
+            var newBus = new Bus
+            {
+                Capacity = busDto.Capacity,
+                IsActive = busDto.IsActive,
+                Number = busDto.Number,
+                PlateNumber = busDto.PlateNumber
+            };
+            _unitOfWork.Bus.Add(newBus);
+            int rowsAffected =  _unitOfWork.Save();
+            return rowsAffected > 0;
             
         }
 
@@ -45,17 +52,17 @@ namespace BusManager.Application.Services.Implementations
 
 
 
-        public async Task<Bus> UpdateBus(string BusId, Bus bs)
+        public async Task<Bus> UpdateBus(string BusId, BusDto busDto)
         {
             var bus = await _unitOfWork.Bus.Get(u => u.Id == BusId);
             if(bus == null)
             {
                 return null;
             }
-            bus.PlateNumber = bs.PlateNumber;
-            bus.Capacity = bs.Capacity;
-            bus.Number = bs.Number;
-            bus.IsActive = bs.IsActive;
+            bus.PlateNumber = busDto.PlateNumber;
+            bus.Capacity = busDto.Capacity;
+            bus.Number = busDto.Number;
+            bus.IsActive = busDto.IsActive;
             _unitOfWork.Bus.Update(bus);
             _unitOfWork.Save();
             return bus;

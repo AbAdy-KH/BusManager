@@ -1,3 +1,4 @@
+using BusManager.Application.Common.DTOs;
 using BusManager.Application.Services.Interfaces;
 using BusManager.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -33,19 +34,15 @@ namespace BusManager.Api.Controllers
             return Ok(bus);
         }
         [HttpPost("create")]
-        public async Task<ActionResult<Bus>> Create(Bus bus)
+        public async Task<ActionResult<bool>> Create(BusDto busDto)
         {
-            var CreatedBus = await _busService.CreateBus(bus);
-            if(CreatedBus == null)
-            {
-                return BadRequest();
-            }
-            return CreatedAtAction(nameof(GetById), new { id = CreatedBus.Id }, CreatedBus);
+            bool IsCreated = await _busService.CreateBus(busDto);
+            return IsCreated;
         }
-        [HttpPut("update/{id}")]
-        public async Task<ActionResult<Bus>> Update(string id, Bus bus)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Bus>> Update(string id, BusDto busDto)
         {
-            var updatedBus = await _busService.UpdateBus(id, bus);
+            var updatedBus = await _busService.UpdateBus(id, busDto);
             if(updatedBus == null)
             {
                 return NotFound();
@@ -55,25 +52,14 @@ namespace BusManager.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            try
+            var isDeleted = await _busService.DeleteBus(id);
+            
+            if (!isDeleted)
             {
-                var isDeleted = await _busService.DeleteBus(id);
+                return BadRequest();
+            }
 
-                if (!isDeleted)
-                {
-                    return NotFound($"Bus with ID '{id}' was not found.");
-                }
-
-                return NoContent(); 
-            }
-            catch (DbUpdateException)
-            {
-                return Conflict($"Cannot delete bus with ID '{id}' because it has related trip or driver records.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-            }
+            return Ok(); 
         }
     }
 }
