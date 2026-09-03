@@ -27,7 +27,8 @@ namespace BusManager.Api.Hubs
 
                 Console.WriteLine("Bus sent location");
             }
+
+            Console.WriteLine(Context.User?.IsInRole("Driver"));
         }   
-            
     }
 }

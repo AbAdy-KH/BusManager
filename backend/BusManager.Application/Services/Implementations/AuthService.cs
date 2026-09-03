@@ -34,12 +34,18 @@ namespace BusManager.Application.Services.Implementations
         {
             User user = dto.Role switch
             {
+                UserRole.Admin => new User
+                {
+                    UserName = dto.Email,
+                    Email = dto.Email,
+                    Name = dto.Name
+                },
                 UserRole.Driver => new Driver
                 {
                     UserName = dto.Email,
                     Email = dto.Email,
                     Name = dto.Name,
-                    LicenseNumber = dto.LicenseNumber
+                    LicenseNumber = dto.LicenseNumber!
                 },
                 _ => throw new ArgumentException("Invalid user type")
             };
@@ -120,6 +126,7 @@ namespace BusManager.Application.Services.Implementations
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+                // claims.Add(new Claim("role", role));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

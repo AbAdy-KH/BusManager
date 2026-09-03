@@ -1,11 +1,13 @@
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BusManager.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class DriverController : ControllerBase
     {
         private readonly IDriverService _driverService;
