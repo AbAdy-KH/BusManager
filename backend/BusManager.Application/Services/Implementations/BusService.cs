@@ -46,8 +46,8 @@ namespace BusManager.Application.Services.Implementations
                 return false;
             }
             _unitOfWork.Bus.Delete(bus);
-            _unitOfWork.Save();
-            return true;
+            int rowsAffected = _unitOfWork.Save();
+            return rowsAffected > 0;
         }
 
 

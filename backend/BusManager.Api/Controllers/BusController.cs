@@ -33,11 +33,13 @@ namespace BusManager.Api.Controllers
             }
             return Ok(bus);
         }
-        [HttpPost("create")]
+        [HttpPost("Create")]
         public async Task<ActionResult<bool>> Create(BusDto busDto)
         {
             bool IsCreated = await _busService.CreateBus(busDto);
-            return IsCreated;
+            if(!IsCreated)
+                return BadRequest();
+            return Ok(IsCreated);
         }
         [HttpPut("{id}")]
         public async Task<ActionResult<Bus>> Update(string id, BusDto busDto)
@@ -59,7 +61,7 @@ namespace BusManager.Api.Controllers
                 return BadRequest();
             }
 
-            return Ok(); 
+            return Ok(isDeleted); 
         }
     }
 }
