@@ -27,7 +27,6 @@ namespace BusManager.Api.Hubs
 
                 Console.WriteLine("Bus sent location");
             }
-
         }   
             
     }

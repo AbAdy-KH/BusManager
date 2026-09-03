@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/useAuth';
+import { useLanguage } from '../context/useLanguage';
 import {
   fetchBuses,
   fetchDrivers,
@@ -23,15 +24,15 @@ import {
   Search,
   Plus,
   AlertCircle,
-  ShieldAlert,
   Radio,
 } from 'lucide-react';
 
 export default function AdminPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const isAdmin = user?.roles?.includes('Admin');
 
-  const [activeTab, setActiveTab] = useState('map'); // 'map' | 'buses' | 'drivers' | 'trips' | 'stops'
+  const [activeTab, setActiveTab] = useState('map');
   const [searchTerm, setSearchTerm] = useState('');
   const [tripDate, setTripDate] = useState(getTodayDateString());
 
@@ -40,14 +41,12 @@ export default function AdminPage() {
   const [trips, setTrips] = useState([]);
   const [stops, setStops] = useState([]);
 
-  // Live SignalR telemetry for Admin
   const [liveBuses, setLiveBuses] = useState({});
   const [hubStatus, setHubStatus] = useState('disconnected');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load backend API data
   const loadAllData = useCallback(async (selectedTripDate = tripDate) => {
     setLoading(true);
     setError(null);
@@ -77,7 +76,6 @@ export default function AdminPage() {
     }
   }, [tripDate]);
 
-  // Initial load
   useEffect(() => {
     let ignore = false;
 
@@ -117,7 +115,6 @@ export default function AdminPage() {
     };
   }, []);
 
-  // Admin SignalR Hub Connection for live bus telemetry
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -154,11 +151,11 @@ export default function AdminPage() {
   const liveBusesList = Object.values(liveBuses);
 
   const tabs = [
-    { id: 'map', label: 'Live Map', icon: Map, count: stops.length, badge: isAdmin ? `${liveBusesList.length} live` : null },
-    { id: 'buses', label: 'Buses', icon: Bus, count: buses.length },
-    { id: 'drivers', label: 'Drivers', icon: Users, count: drivers.length },
-    { id: 'trips', label: 'Trips (Today)', icon: RouteIcon, count: trips.length },
-    { id: 'stops', label: 'Stops', icon: MapPin, count: stops.length },
+    { id: 'map', label: t.fleetMap, icon: Map, count: stops.length, badge: isAdmin ? `${liveBusesList.length} ${t.active}` : null },
+    { id: 'buses', label: t.buses, icon: Bus, count: buses.length },
+    { id: 'drivers', label: t.drivers, icon: Users, count: drivers.length },
+    { id: 'trips', label: t.trips, icon: RouteIcon, count: trips.length },
+    { id: 'stops', label: t.stops, icon: MapPin, count: stops.length },
   ];
 
   return (
@@ -167,16 +164,13 @@ export default function AdminPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            Admin Management
+            {t.adminDashboard}
             {isAdmin && hubStatus === 'connected' && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
-                <Radio className="w-3 h-3 animate-pulse" /> Live Telemetry
+                <Radio className="w-3 h-3 animate-pulse" /> {t.active}
               </span>
             )}
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Real-time fleet tracking map, stop points, drivers, and daily schedule
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -187,20 +181,10 @@ export default function AdminPage() {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span>{t.refresh}</span>
           </button>
         </div>
       </div>
-
-      {/* Role Notice (if not admin) */}
-      {user && !user.roles?.includes('Admin') && (
-        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2">
-          <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
-          <span>
-            You are signed in as <strong>{user.email}</strong> ({user.roles?.[0] || 'User'}). Viewing in standard read-only mode. Live bus telemetry is enabled for Admins.
-          </span>
-        </div>
-      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -213,12 +197,12 @@ export default function AdminPage() {
           }`}
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>Fleet Map</span>
+            <span>{t.fleetMap}</span>
             <Map className="w-4 h-4 text-indigo-400" />
           </div>
           <div className="text-xl font-bold text-white mt-1.5">{stops.length}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">
-            {isAdmin ? `${liveBusesList.length} buses live` : 'Registered stops'}
+            {isAdmin ? `${liveBusesList.length} ${t.liveActiveBus}` : t.stopPoints}
           </div>
         </div>
 
@@ -231,12 +215,12 @@ export default function AdminPage() {
           }`}
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>Buses</span>
+            <span>{t.buses}</span>
             <Bus className="w-4 h-4 text-indigo-400" />
           </div>
           <div className="text-xl font-bold text-white mt-1.5">{buses.length}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">
-            {buses.filter((b) => b.isActive).length} active
+            {buses.filter((b) => b.isActive).length} {t.active}
           </div>
         </div>
 
@@ -249,12 +233,12 @@ export default function AdminPage() {
           }`}
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>Trips (Today)</span>
+            <span>{t.trips}</span>
             <RouteIcon className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="text-xl font-bold text-white mt-1.5">{trips.length}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">
-            {tripDate === getTodayDateString() ? 'Today scheduled' : tripDate || 'All'}
+            {tripDate === getTodayDateString() ? t.today : tripDate || t.allDates}
           </div>
         </div>
 
@@ -267,12 +251,12 @@ export default function AdminPage() {
           }`}
         >
           <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>Stop Points</span>
+            <span>{t.stops}</span>
             <MapPin className="w-4 h-4 text-rose-400" />
           </div>
           <div className="text-xl font-bold text-white mt-1.5">{stops.length}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">
-            {stops.filter((s) => s.isActive).length} active
+            {stops.filter((s) => s.isActive).length} {t.active}
           </div>
         </div>
       </div>
@@ -317,23 +301,22 @@ export default function AdminPage() {
           {activeTab !== 'map' && (
             <div className="flex items-center gap-2">
               <div className="relative flex-1 sm:w-56">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-3.5 h-3.5 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder={`Search ${activeTab}...`}
+                  placeholder={t.search}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full pl-8 rtl:pl-3 rtl:pr-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-left rtl:text-right"
                 />
               </div>
 
               <button
                 type="button"
-                title="Add New Record (Prepared for future CRUD)"
                 className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Add {activeTab.slice(0, -1)}</span>
+                <span>{t.add}</span>
               </button>
             </div>
           )}
@@ -350,7 +333,7 @@ export default function AdminPage() {
               onClick={() => loadAllData(tripDate)}
               className="text-xs underline font-semibold hover:text-white cursor-pointer"
             >
-              Retry
+              {t.retry}
             </button>
           </div>
         )}
@@ -359,7 +342,7 @@ export default function AdminPage() {
         {loading && activeTab !== 'map' ? (
           <div className="py-16 flex flex-col items-center justify-center text-slate-400 gap-2">
             <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <span className="text-xs">Loading data from backend...</span>
+            <span className="text-xs">{t.signingIn}</span>
           </div>
         ) : (
           /* Tab Views */

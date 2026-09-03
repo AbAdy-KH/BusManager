@@ -1,0 +1,161 @@
+import { useState, useEffect } from 'react';
+import { LanguageContext } from './LanguageContextInstance';
+
+const translations = {
+  ar: {
+    dir: 'rtl',
+    appName: 'نظام إدارة الحافلات',
+    login: 'تسجيل الدخول',
+    logout: 'تسجيل خروج',
+    email: 'البريد الإلكتروني',
+    password: 'كلمة المرور',
+    signInBtn: 'دخول',
+    signingIn: 'جاري الدخول...',
+    loginPrompt: 'سجل الدخول للمتابعة',
+    signedInAs: 'تم تسجيل الدخول باسم',
+    role: 'الدور',
+    admin: 'مسؤول',
+    driver: 'سائق',
+    student: 'طالب',
+    adminDashboard: 'لوحة الإدارة',
+    driverDashboard: 'لوحة السائق',
+    fleetMap: 'الخريطة المباشرة',
+    buses: 'الحافلات',
+    drivers: 'السائقين',
+    trips: 'رحلات اليوم',
+    stops: 'المحطات',
+    refresh: 'تحديث',
+    search: 'بحث...',
+    add: 'إضافة',
+    active: 'نشط',
+    inactive: 'غير نشط',
+    busNumber: 'رقم الحافلة',
+    plateNumber: 'رقم اللوحة',
+    capacity: 'السعة',
+    seats: 'مقاعد',
+    status: 'الحالة',
+    actions: 'إجراءات',
+    driverName: 'اسم السائق',
+    licenseNumber: 'رقم الرخصة',
+    driverId: 'معرف السائق',
+    route: 'المسار',
+    direction: 'الاتجاه',
+    schedule: 'الموعد',
+    stopName: 'اسم المحطة',
+    address: 'العنوان',
+    coordinates: 'الإحداثيات',
+    type: 'النوع',
+    dropPoint: 'نقطة نزول',
+    pickupPoint: 'نقطة صعود',
+    liveActiveBus: 'حافلة نشطة',
+    stopPoints: 'محطات',
+    liveBusesCount: 'حافلات مباشرة',
+    adminOnlyTelemetry: 'متابعة الحافلات المباشرة للمسؤولين فقط',
+    driverGpsActive: 'إرسال موقع السائق تلقائياً (كل 10 ثوانٍ)',
+    driverGpsDesc: 'يتم بث موقعك الجغرافي الحالي تلقائياً إلى السيرفر كل 10 ثوانٍ.',
+    driverInfo: 'بيانات السائق',
+    assignedBus: 'الحافلة المخصصة',
+    busNum: 'حافلة رقم',
+    lastPing: 'آخر إرسال',
+    allDates: 'جميع التواريخ',
+    today: 'اليوم',
+    filterDate: 'تحديد التاريخ:',
+    noData: 'لا توجد بيانات متاحة.',
+    pageNotFound: 'الصفحة غير موجودة',
+    goToDashboard: 'الذهاب للوحة التحكم',
+    accessDenied: 'غير مصرح بالدخول',
+    accessDeniedAdminOnly: 'هذه الصفحة مخصصة لمدير النظام (Admin) فقط.',
+    backToDriverPanel: 'الذهاب للوحة السائق',
+    retry: 'إعادة المحاولة',
+  },
+  en: {
+    dir: 'ltr',
+    appName: 'BusManager',
+    login: 'Sign In',
+    logout: 'Log Out',
+    email: 'Email',
+    password: 'Password',
+    signInBtn: 'Sign In',
+    signingIn: 'Signing in...',
+    loginPrompt: 'Sign in to your account',
+    signedInAs: 'Signed in as',
+    role: 'Role',
+    admin: 'Admin',
+    driver: 'Driver',
+    student: 'Student',
+    adminDashboard: 'Admin Panel',
+    driverDashboard: 'Driver Panel',
+    fleetMap: 'Live Map',
+    buses: 'Buses',
+    drivers: 'Drivers',
+    trips: "Today's Trips",
+    stops: 'Stops',
+    refresh: 'Refresh',
+    search: 'Search...',
+    add: 'Add',
+    active: 'Active',
+    inactive: 'Inactive',
+    busNumber: 'Bus #',
+    plateNumber: 'Plate Number',
+    capacity: 'Capacity',
+    seats: 'seats',
+    status: 'Status',
+    actions: 'Actions',
+    driverName: 'Driver Name',
+    licenseNumber: 'License Number',
+    driverId: 'Driver ID',
+    route: 'Route',
+    direction: 'Direction',
+    schedule: 'Schedule',
+    stopName: 'Stop Name',
+    address: 'Address',
+    coordinates: 'Coordinates',
+    type: 'Type',
+    dropPoint: 'Drop Point',
+    pickupPoint: 'Pickup Point',
+    liveActiveBus: 'Live Active Bus',
+    stopPoints: 'Stops',
+    liveBusesCount: 'Live Buses',
+    adminOnlyTelemetry: 'Live bus tracking is restricted to Admins',
+    driverGpsActive: 'Driver GPS Auto-sending (every 10s)',
+    driverGpsDesc: 'Your current GPS coordinates are automatically broadcast to the server every 10 seconds.',
+    driverInfo: 'Driver Info',
+    assignedBus: 'Assigned Bus',
+    busNum: 'Bus #',
+    lastPing: 'Last ping',
+    allDates: 'All Dates',
+    today: 'Today',
+    filterDate: 'Filter Date:',
+    noData: 'No data available.',
+    pageNotFound: 'Page Not Found',
+    goToDashboard: 'Go to Dashboard',
+    accessDenied: 'Access Denied',
+    accessDeniedAdminOnly: 'This page is restricted to system Administrators only.',
+    backToDriverPanel: 'Go to Driver Panel',
+    retry: 'Retry',
+  },
+};
+
+export function LanguageProvider({ children }) {
+  const [lang, setLang] = useState(() => localStorage.getItem('busmanager_lang') || 'ar');
+
+  const toggleLanguage = () => {
+    const nextLang = lang === 'ar' ? 'en' : 'ar';
+    setLang(nextLang);
+    localStorage.setItem('busmanager_lang', nextLang);
+  };
+
+  const t = translations[lang] || translations.ar;
+  const isRtl = t.dir === 'rtl';
+
+  useEffect(() => {
+    document.documentElement.dir = t.dir;
+    document.documentElement.lang = lang;
+  }, [lang, t.dir]);
+
+  return (
+    <LanguageContext.Provider value={{ lang, setLang, toggleLanguage, t, isRtl }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}

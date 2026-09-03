@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { AuthContext } from './AuthContextInstance';
 import {
   getStoredTokens,
@@ -7,34 +7,16 @@ import {
   logoutApi,
   refreshTokensApi,
 } from '../services/authService';
-import { getApiBaseUrl, setApiBaseUrl as saveApiBaseUrl } from '../config/api.config';
 
 export function AuthProvider({ children }) {
   const [tokens, setTokens] = useState(() => getStoredTokens());
-  const [baseUrl, setBaseUrlState] = useState(() => getApiBaseUrl());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Listen to external API URL change events
-  useEffect(() => {
-    const handleUrlChange = (e) => {
-      setBaseUrlState(e.detail || getApiBaseUrl());
-    };
-    window.addEventListener('busmanager_api_url_changed', handleUrlChange);
-    return () => {
-      window.removeEventListener('busmanager_api_url_changed', handleUrlChange);
-    };
-  }, []);
 
   // Derive user directly from tokens
   const user = useMemo(() => {
     return tokens?.accessToken ? parseJwt(tokens.accessToken) : null;
   }, [tokens]);
-
-  const updateBaseUrl = useCallback((newUrl) => {
-    saveApiBaseUrl(newUrl);
-    setBaseUrlState(getApiBaseUrl());
-  }, []);
 
   const login = useCallback(async (credentials) => {
     setLoading(true);
@@ -78,17 +60,15 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       tokens,
-      baseUrl,
       loading,
       error,
       isAuthenticated: !!user,
       login,
       logout,
       refreshToken,
-      setBaseUrl: updateBaseUrl,
       clearError: () => setError(null),
     }),
-    [user, tokens, baseUrl, loading, error, login, logout, refreshToken, updateBaseUrl]
+    [user, tokens, loading, error, login, logout, refreshToken]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,9 +1,11 @@
 import { useDriverLocationSender } from '../../hooks/useDriverLocationSender';
+import { useLanguage } from '../../context/useLanguage';
 import { Navigation, Radio, Clock, AlertTriangle } from 'lucide-react';
 
 export default function DriverTrackerBar() {
   const { isDriver, busId, setBusId, coordinates, lastSentTime, status, error } =
     useDriverLocationSender();
+  const { t } = useLanguage();
 
   if (!isDriver) return null;
 
@@ -16,15 +18,14 @@ export default function DriverTrackerBar() {
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
           </span>
           <span className="font-semibold text-white flex items-center gap-1.5">
-            <Radio className="w-3.5 h-3.5 text-indigo-400" /> Driver Auto-GPS Active:
+            <Radio className="w-3.5 h-3.5 text-indigo-400" /> {t.driverGpsActive}
           </span>
-          <span className="text-indigo-300">Broadcasting location every 10s</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
           {/* Bus ID selector */}
           <div className="flex items-center gap-1">
-            <span className="text-indigo-400">Bus #:</span>
+            <span className="text-indigo-400">{t.busNum}:</span>
             <input
               type="number"
               min="1"
@@ -46,7 +47,7 @@ export default function DriverTrackerBar() {
           {lastSentTime && (
             <div className="flex items-center gap-1 text-emerald-300">
               <Clock className="w-3 h-3" />
-              <span>Last ping: {lastSentTime}</span>
+              <span>{t.lastPing}: {lastSentTime}</span>
             </div>
           )}
 

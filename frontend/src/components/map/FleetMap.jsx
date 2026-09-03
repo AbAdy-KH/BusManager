@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/useAuth';
+import { useLanguage } from '../../context/useLanguage';
 import {
   MapPin,
   Bus,
@@ -13,9 +14,6 @@ import {
   Navigation,
 } from 'lucide-react';
 
-/**
- * Standard Web Mercator coordinate projection helpers
- */
 function latLngToWorld(lat, lng) {
   const sinY = Math.min(Math.max(Math.sin((lat * Math.PI) / 180), -0.9999), 0.9999);
   return {
@@ -26,12 +24,12 @@ function latLngToWorld(lat, lng) {
 
 export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disconnected' }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const isAdmin = user?.roles?.includes('Admin');
 
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ w: 800, h: 500 });
 
-  // Compute computed center automatically based on stop points
   const autoCenter = useMemo(() => {
     if (stops.length > 0) {
       const avgLat = stops.reduce((sum, s) => sum + Number(s.latitude), 0) / stops.length;
@@ -47,11 +45,9 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
   const [zoom, setZoom] = useState(13);
   const [selectedEntity, setSelectedEntity] = useState(null);
 
-  // Dragging / panning state
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Track container dimensions safely via effect
   useEffect(() => {
     if (!containerRef.current) return;
     const updateSize = () => {
@@ -67,7 +63,6 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Convert lat/lng to container pixel coordinates
   const projectToPixels = useCallback(
     (lat, lng, containerWidth, containerHeight) => {
       const scale = Math.pow(2, zoom);
@@ -81,7 +76,6 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
     [center, zoom]
   );
 
-  // Fit all stops & buses in view
   const handleFitAll = () => {
     const allPoints = [
       ...stops.map((s) => ({ lat: Number(s.latitude), lng: Number(s.longitude) })),
@@ -102,7 +96,6 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
     setZoom(13);
   };
 
-  // Mouse pan handlers
   const handleMouseDown = (e) => {
     if (e.button !== 0) return;
     setIsDragging(true);
@@ -175,27 +168,28 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
       <div className="bg-slate-900/90 backdrop-blur-md px-4 py-2.5 border-b border-slate-700/80 z-20 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-bold text-white flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-indigo-400" /> Transit Fleet Map
+            <Layers className="w-4 h-4 text-indigo-400" /> {t.fleetMap}
           </span>
           <span className="text-slate-500">•</span>
-          <span className="text-slate-300">{stops.length} Stop Points</span>
+          <span className="text-slate-300">
+            {stops.length} {t.stopPoints}
+          </span>
           {isAdmin && (
             <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
-              <Radio className="w-3 h-3 animate-pulse" /> {liveBuses.length} Active Live Buses
+              <Radio className="w-3 h-3 animate-pulse" /> {liveBuses.length} {t.liveBusesCount}
             </span>
           )}
         </div>
 
-        {/* Status or Admin notice */}
         <div className="flex items-center gap-3">
           {isAdmin ? (
             <span className="inline-flex items-center gap-1 text-[11px] text-emerald-300 font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              SignalR: {hubStatus}
+              {hubStatus === 'connected' ? t.active : hubStatus}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-              <Lock className="w-3 h-3" /> Live Bus Telemetry: Admin Only
+              <Lock className="w-3 h-3" /> {t.adminOnlyTelemetry}
             </span>
           )}
         </div>
@@ -329,7 +323,7 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                   <Bus className="w-4 h-4" />
                 </div>
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-slate-900 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap border border-emerald-500/40">
-                  Bus #{bus.busId}
+                  #{bus.busId}
                 </div>
               </button>
             );
@@ -338,7 +332,7 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
         {/* Selected Entity Popup Overlay */}
         {selectedEntity && (
           <div
-            className="absolute bottom-4 left-4 z-30 bg-slate-900/95 border border-slate-700 text-white p-3.5 rounded-xl shadow-2xl max-w-xs animate-fadeIn backdrop-blur-md"
+            className="absolute bottom-4 left-4 rtl:left-auto rtl:right-4 z-30 bg-slate-900/95 border border-slate-700 text-white p-3.5 rounded-xl shadow-2xl max-w-xs animate-fadeIn backdrop-blur-md text-left rtl:text-right"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-2">
@@ -349,7 +343,7 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                     <span>{selectedEntity.data.name}</span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1">
-                    {selectedEntity.data.address || 'No registered street address'}
+                    {selectedEntity.data.address || '-'}
                   </p>
                   <div className="flex items-center gap-2 mt-2 font-mono text-[11px] text-slate-400">
                     <span>
@@ -359,10 +353,10 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                   </div>
                   <div className="mt-2 flex gap-1">
                     <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                      {selectedEntity.data.isDropPoint ? 'Drop Point' : 'Pickup Point'}
+                      {selectedEntity.data.isDropPoint ? t.dropPoint : t.pickupPoint}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {selectedEntity.data.isActive ? 'Active Stop' : 'Inactive'}
+                      {selectedEntity.data.isActive ? t.active : t.inactive}
                     </span>
                   </div>
                 </div>
@@ -370,7 +364,7 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-sm text-emerald-300">
                     <Bus className="w-4 h-4 text-emerald-400" />
-                    <span>Live Bus #{selectedEntity.data.busId}</span>
+                    <span>{t.busNum} #{selectedEntity.data.busId}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-slate-300 mt-1 font-mono">
                     <Navigation className="w-3 h-3 text-indigo-400" />
@@ -381,7 +375,7 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-1.5">
                     <Clock className="w-3 h-3 text-slate-500" />
-                    <span>Last Telemetry: {selectedEntity.data.timestamp || 'Live'}</span>
+                    <span>{t.lastPing}: {selectedEntity.data.timestamp || '-'}</span>
                   </div>
                 </div>
               )}
@@ -397,13 +391,12 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
           </div>
         )}
 
-        {/* Map Control Buttons (Zoom, Fit) */}
-        <div className="absolute top-4 right-4 z-20 flex flex-col gap-1.5">
+        {/* Map Controls */}
+        <div className="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex flex-col gap-1.5">
           <button
             type="button"
             onClick={() => setZoom((z) => Math.min(18, z + 1))}
             className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700 rounded-lg shadow-lg transition-colors cursor-pointer"
-            title="Zoom In"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -411,7 +404,6 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
             type="button"
             onClick={() => setZoom((z) => Math.max(5, z - 1))}
             className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700 rounded-lg shadow-lg transition-colors cursor-pointer"
-            title="Zoom Out"
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -419,26 +411,25 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
             type="button"
             onClick={handleFitAll}
             className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700 rounded-lg shadow-lg transition-colors cursor-pointer"
-            title="Fit All Markers"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Map Legend */}
-        <div className="absolute bottom-4 right-4 z-20 bg-slate-900/90 border border-slate-700/80 rounded-lg p-2.5 text-[10px] text-slate-300 flex flex-col gap-1.5 shadow-lg backdrop-blur-sm">
+        {/* Legend */}
+        <div className="absolute bottom-4 right-4 rtl:right-auto rtl:left-4 z-20 bg-slate-900/90 border border-slate-700/80 rounded-lg p-2.5 text-[10px] text-slate-300 flex flex-col gap-1.5 shadow-lg backdrop-blur-sm">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 border border-white" />
-            <span>Pickup Stop</span>
+            <span>{t.pickupPoint}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-600 border border-white" />
-            <span>Drop Stop</span>
+            <span>{t.dropPoint}</span>
           </div>
           {isAdmin && (
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white animate-pulse" />
-              <span className="text-emerald-300 font-semibold">Live Active Bus</span>
+              <span className="text-emerald-300 font-semibold">{t.liveActiveBus}</span>
             </div>
           )}
         </div>
