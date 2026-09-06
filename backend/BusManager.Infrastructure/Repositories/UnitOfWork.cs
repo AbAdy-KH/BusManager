@@ -21,16 +21,18 @@ namespace BusManager.Infrastructure.Repositories
             Trip = new TripRepository(db);
         }
 
-        public void Save()
+        public int Save()
         {
             try
             {
-                _db.SaveChanges();
+                return _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                return 0;
             }
+            
         }
     }
 }
