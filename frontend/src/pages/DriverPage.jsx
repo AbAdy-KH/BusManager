@@ -118,65 +118,6 @@ export default function DriverPage() {
             </div>
           </div>
         </div>
-
-        {/* GPS Live Transmission Card */}
-        <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-5 shadow-lg flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-indigo-300 text-xs font-medium mb-3">
-              <span className="font-semibold text-white flex items-center gap-1.5">
-                <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-                {t.driverGpsActive}
-              </span>
-              <span className="text-[10px] text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">
-                10s Ping
-              </span>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              {/* Bus number selection */}
-              <div className="flex items-center justify-between bg-slate-900/80 p-2.5 rounded-lg border border-slate-700/80">
-                <span className="text-slate-300 font-medium flex items-center gap-1.5">
-                  <Bus className="w-4 h-4 text-indigo-400" /> {t.assignedBus}:
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 font-mono text-[11px]">{t.busNum}</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={busId}
-                    onChange={(e) => setBusId(Number(e.target.value) || 1)}
-                    className="w-16 bg-slate-800 border border-indigo-500/40 rounded px-2 py-1 text-white font-bold text-center focus:outline-none focus:border-indigo-400 font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Coordinates */}
-              <div className="flex items-center justify-between bg-slate-900/80 p-2.5 rounded-lg border border-slate-700/80 font-mono">
-                <span className="text-slate-400 flex items-center gap-1.5">
-                  <Navigation className="w-3.5 h-3.5 text-indigo-400" /> {t.coordinates}:
-                </span>
-                <span className="text-white font-bold text-[11px]">
-                  {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
-                </span>
-              </div>
-
-              {/* Last sent & error */}
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                <div className="flex items-center gap-1 text-emerald-300">
-                  <Clock className="w-3 h-3" />
-                  <span>{t.lastPing}: {lastSentTime || '-'}</span>
-                </div>
-
-                {error && status === 'error' && (
-                  <div className="flex items-center gap-1 text-rose-400 text-[10px]">
-                    <AlertTriangle className="w-3 h-3" />
-                    <span>{error}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Driver Schedule / Assigned Trips for Today */}

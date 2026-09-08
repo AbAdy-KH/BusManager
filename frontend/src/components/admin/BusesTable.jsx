@@ -33,6 +33,7 @@ export default function BusesTable({ buses = [], searchTerm = '' }) {
             <th className="py-3 px-4 text-right rtl:text-left">{t.actions}</th>
           </tr>
         </thead>
+
         <tbody className="divide-y divide-slate-800">
           {filteredBuses.map((bus) => (
             <tr key={bus.id || bus.number} className="hover:bg-slate-800/50 transition-colors">

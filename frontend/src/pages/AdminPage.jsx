@@ -172,93 +172,6 @@ export default function AdminPage() {
             )}
           </h1>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => loadAllData(tripDate)}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>{t.refresh}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div
-          onClick={() => setActiveTab('map')}
-          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-            activeTab === 'map'
-              ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
-              : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600'
-          }`}
-        >
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>{t.fleetMap}</span>
-            <Map className="w-4 h-4 text-indigo-400" />
-          </div>
-          <div className="text-xl font-bold text-white mt-1.5">{stops.length}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            {isAdmin ? `${liveBusesList.length} ${t.liveActiveBus}` : t.stopPoints}
-          </div>
-        </div>
-
-        <div
-          onClick={() => setActiveTab('buses')}
-          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-            activeTab === 'buses'
-              ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
-              : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600'
-          }`}
-        >
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>{t.buses}</span>
-            <Bus className="w-4 h-4 text-indigo-400" />
-          </div>
-          <div className="text-xl font-bold text-white mt-1.5">{buses.length}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            {buses.filter((b) => b.isActive).length} {t.active}
-          </div>
-        </div>
-
-        <div
-          onClick={() => setActiveTab('trips')}
-          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-            activeTab === 'trips'
-              ? 'bg-emerald-600/15 border-emerald-500/40 text-white'
-              : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600'
-          }`}
-        >
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>{t.trips}</span>
-            <RouteIcon className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-xl font-bold text-white mt-1.5">{trips.length}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            {tripDate === getTodayDateString() ? t.today : tripDate || t.allDates}
-          </div>
-        </div>
-
-        <div
-          onClick={() => setActiveTab('stops')}
-          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-            activeTab === 'stops'
-              ? 'bg-rose-600/15 border-rose-500/40 text-white'
-              : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600'
-          }`}
-        >
-          <div className="flex items-center justify-between text-slate-400 text-xs font-medium">
-            <span>{t.stops}</span>
-            <MapPin className="w-4 h-4 text-rose-400" />
-          </div>
-          <div className="text-xl font-bold text-white mt-1.5">{stops.length}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            {stops.filter((s) => s.isActive).length} {t.active}
-          </div>
-        </div>
       </div>
 
       {/* Main Content Card with Navigation Tabs */}
@@ -354,14 +267,7 @@ export default function AdminPage() {
             )}
             {activeTab === 'buses' && <BusesTable buses={buses} searchTerm={searchTerm} />}
             {activeTab === 'drivers' && <DriversTable drivers={drivers} searchTerm={searchTerm} />}
-            {activeTab === 'trips' && (
-              <TripsTable
-                trips={trips}
-                searchTerm={searchTerm}
-                selectedDate={tripDate}
-                onDateChange={handleTripDateChange}
-              />
-            )}
+            {activeTab === 'trips' && (<TripsTable trips={trips} searchTerm={searchTerm} selectedDate={tripDate} onDateChange={handleTripDateChange} />)}
             {activeTab === 'stops' && <StopsTable stops={stops} searchTerm={searchTerm} />}
           </div>
         )}
