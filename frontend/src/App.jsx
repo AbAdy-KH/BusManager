@@ -6,6 +6,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
 import DriverPage from './pages/DriverPage';
+import BusDriverPage from './pages/BusDriverPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 
@@ -27,6 +28,18 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Bus & Driver Attendance Page: Strictly Admin Only */}
+            <Route
+              path="admin/attendance"
+              element={
+                <ProtectedRoute allowedRoles={['Admin']}>
+                  <BusDriverPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="bus-driver" element={<Navigate to="/admin/attendance" replace />} />
+            <Route path="attendance" element={<Navigate to="/admin/attendance" replace />} />
 
             {/* Driver Dashboard: For Drivers */}
             <Route

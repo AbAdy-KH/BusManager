@@ -1,20 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Services.Interfaces;
 using BusManager.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BusManager.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-   
-    public class BusDriverController : Controller
+    public class BusDriverController : ControllerBase
     {
         private readonly IBusDriverService _busDriverService;
 
@@ -22,47 +19,73 @@ namespace BusManager.Api.Controllers
         {
             _busDriverService = busDriverService;
         }
-        [HttpGet("{id}")]
-        public async Task<ActionResult<BusDriver>> GetById(string id)
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<BusDriverListDto>>> GetAll([FromQuery] DateTime? date = null)
         {
-            BusDriver busDriver = await _busDriverService.GetBusDriverById(id);
-            if(busDriver == null)
+            var assignments = await _busDriverService.GetAllAssignments(date);
+            return Ok(assignments);
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Driver")]
+        public async Task<ActionResult<BusDriverListDto>> GetById(string id)
+        {
+            var assignment = await _busDriverService.GetAssignmentById(id);
+            if (assignment == null)
+            {
+                return NotFound();
+            }
+            return Ok(assignment);
+        }
+
+        [HttpGet("today/driver/{driverId}")]
+        [Authorize(Roles = "Admin,Driver")]
+        public async Task<ActionResult<BusDriverListDto>> GetTodayDriverAssignment(string driverId)
+        {
+            var assignment = await _busDriverService.GetTodayAssignmentByDriverId(driverId);
+            if (assignment == null)
+            {
+                return NotFound("No bus assigned for this driver today.");
+            }
+            return Ok(assignment);
+        }
+
+        [HttpPost("assign")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<bool>> Create([FromBody] BusDriverDto busDriverDto)
+        {
+            bool isCreated = await _busDriverService.CreateBusDriver(busDriverDto);
+            if (!isCreated)
+            {
+                return BadRequest("Could not record bus-driver assignment.");
+            }
+            return Ok(new { Success = true, Message = "Bus assigned to driver successfully." });
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<BusDriver>> Update(string id, [FromBody] BusDriverDto busDriverDto)
+        {
+            var busDriver = await _busDriverService.UpdateBusDriver(id, busDriverDto);
+            if (busDriver == null)
             {
                 return NotFound();
             }
             return Ok(busDriver);
         }
-        [HttpPost()]
-        public async Task<ActionResult<bool>> Create(BusDriverDto busDriverDto)
-        {
-            bool isCreated = await _busDriverService.CreateBusDriver(busDriverDto);
-            if(!isCreated)
-            {
-                return BadRequest(false);
-            }
-            return Ok(isCreated);
-        }
-        [HttpDelete("{Id}")]
-        public async Task<ActionResult<bool>> Delete(string Id)
-        {
-            bool isDeleted  = await _busDriverService.DeleteBusDriver(Id);
-            if(!isDeleted)
-            {
-                return BadRequest(false);
-            }
-            return Ok(isDeleted);
-        }
-        [HttpPut()]
-        public async Task<ActionResult<BusDriver>> Update(string Id , BusDriverDto busDriverDto)
-        {
-            BusDriver busDriver = await _busDriverService.UpdateBusDriver(Id , busDriverDto);
-            if(busDriver == null)
-            {
-                return BadRequest();
-            }
-            return Ok(busDriver);
-        }
 
-        
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Delete(string id)
+        {
+            bool isDeleted = await _busDriverService.DeleteBusDriver(id);
+            if (!isDeleted)
+            {
+                return NotFound();
+            }
+            return Ok(new { Success = true, Message = "Assignment removed successfully." });
+        }
     }
 }

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../BusManager.Domain/BusManager.Domain.csproj" />
     <ProjectReference Include="../BusManager.Infrastructure/BusManager.Infrastructure.csproj" />
     <ProjectReference Include="..\BusManager.Application\BusManager.Application.csproj" />
   </ItemGroup>

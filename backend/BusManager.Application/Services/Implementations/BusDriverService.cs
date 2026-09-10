@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Common.Interfaces;
@@ -11,54 +12,123 @@ namespace BusManager.Application.Services
 {
     public class BusDriverService : IBusDriverService
     {
-        private readonly IUnitOfWork _unitOfwork;
+        private readonly IUnitOfWork _unitOfWork;
+
         public BusDriverService(IUnitOfWork unitOfWork)
         {
-            _unitOfwork = unitOfWork;
+            _unitOfWork = unitOfWork;
         }
+
+        public async Task<IEnumerable<BusDriverListDto>> GetAllAssignments(DateTime? date = null)
+        {
+            Expression<Func<BusDriver, bool>>? filter = null;
+            if (date != null)
+            {
+                var startDate = date.Value.Date;
+                var endDate = startDate.AddDays(1);
+                filter = b => b.CreatedAt >= startDate && b.CreatedAt < endDate;
+            }
+
+            var assignments = await _unitOfWork.BusDriver.GetAll(filter, "Bus,Driver");
+            var result = new List<BusDriverListDto>();
+
+            foreach (var a in assignments)
+            {
+                result.Add(new BusDriverListDto(
+                    a.Id,
+                    a.BusId,
+                    a.Bus?.Number,
+                    a.Bus?.PlateNumber,
+                    a.DriverId,
+                    a.Driver?.Name,
+                    a.Driver?.LicenseNumber,
+                    a.CreatedAt
+                ));
+            }
+
+            return result;
+        }
+
+        public async Task<BusDriverListDto?> GetAssignmentById(string id)
+        {
+            var a = await _unitOfWork.BusDriver.Get(u => u.Id == id, "Bus,Driver");
+            if (a == null) return null;
+
+            return new BusDriverListDto(
+                a.Id,
+                a.BusId,
+                a.Bus?.Number,
+                a.Bus?.PlateNumber,
+                a.DriverId,
+                a.Driver?.Name,
+                a.Driver?.LicenseNumber,
+                a.CreatedAt
+            );
+        }
+
+        public async Task<BusDriverListDto?> GetTodayAssignmentByDriverId(string driverId)
+        {
+            var today = DateTime.UtcNow.Date;
+            var tomorrow = today.AddDays(1);
+
+            var a = await _unitOfWork.BusDriver.Get(
+                u => u.DriverId == driverId && u.CreatedAt >= today && u.CreatedAt < tomorrow,
+                "Bus,Driver"
+            );
+
+            if (a == null) return null;
+
+            return new BusDriverListDto(
+                a.Id,
+                a.BusId,
+                a.Bus?.Number,
+                a.Bus?.PlateNumber,
+                a.DriverId,
+                a.Driver?.Name,
+                a.Driver?.LicenseNumber,
+                a.CreatedAt
+            );
+        }
+
         public async Task<bool> CreateBusDriver(BusDriverDto busDriverDto)
         {
-            BusDriver busDriver = new BusDriver{ 
-                BusId = busDriverDto.BusId,
-                Bus = busDriverDto.Bus,
-                CreatedAt = busDriverDto.CreatedAt,
-                Driver = busDriverDto.Driver,
-                DriverId = busDriverDto.DriverId
-                };
-            _unitOfwork.BusDriver.Add(busDriver);
-            int rowsAffected =  _unitOfwork.Save();
-            return rowsAffected > 0;
-        }
-
-        public async Task<bool> DeleteBusDriver(string BusDriverId)
-        {
-            BusDriver busDriver = await _unitOfwork.BusDriver.Get(u => u.Id == BusDriverId);
-            if(busDriver == null)
+            var busDriver = new BusDriver
             {
-                return false;
-            }
-            _unitOfwork.BusDriver.Delete(busDriver);
-            int rowsAffected = _unitOfwork.Save();
+                BusId = busDriverDto.BusId,
+                DriverId = busDriverDto.DriverId,
+                CreatedAt = busDriverDto.CreatedAt != default ? busDriverDto.CreatedAt : DateTime.UtcNow
+            };
+
+            _unitOfWork.BusDriver.Add(busDriver);
+            int rowsAffected = _unitOfWork.Save();
             return rowsAffected > 0;
         }
 
-        public async Task<BusDriver> GetBusDriverById(string BusDriverId)
+        public async Task<BusDriver?> UpdateBusDriver(string busDriverId, BusDriverDto busDriverDto)
         {
-            BusDriver busDriver = await _unitOfwork.BusDriver.Get(u => u.Id == BusDriverId , "BusDriver.Driver, BusDriver.Bus");
+            var busDriver = await _unitOfWork.BusDriver.Get(u => u.Id == busDriverId);
+            if (busDriver == null) return null;
+
+            busDriver.BusId = busDriverDto.BusId;
+            busDriver.DriverId = busDriverDto.DriverId;
+            if (busDriverDto.CreatedAt != default)
+            {
+                busDriver.CreatedAt = busDriverDto.CreatedAt;
+            }
+
+            _unitOfWork.BusDriver.Update(busDriver);
+            _unitOfWork.Save();
             return busDriver;
         }
 
-        public async Task<BusDriver> UpdateBusDriver(string BusDriverId, BusDriverDto busDriverDto)
+        public async Task<bool> DeleteBusDriver(string busDriverId)
         {
-            BusDriver busDriver = await _unitOfwork.BusDriver.Get(u => u.Id == BusDriverId , "BusDriver.Driver, BusDriver.Bus");
-            busDriver.BusId = busDriverDto.BusId;
-            busDriver.Bus = busDriverDto.Bus;
-            busDriver.CreatedAt = busDriver.CreatedAt;
-            busDriver.DriverId = busDriverDto.DriverId;
-            busDriver.Driver = busDriverDto.Driver;
-            _unitOfwork.BusDriver.Update(busDriver);
-            _unitOfwork.Save();
-            return busDriver;
+            var busDriver = await _unitOfWork.BusDriver.Get(u => u.Id == busDriverId);
+            if (busDriver == null) return false;
+
+            _unitOfWork.BusDriver.Delete(busDriver);
+            int rowsAffected = _unitOfWork.Save();
+            return rowsAffected > 0;
         }
     }
 }

@@ -29,15 +29,21 @@ export const API_ROUTES = {
     TRACKING: '/trackingHub',
   },
   BUSES: {
-    ALL: '/api/bus/all',
+    ALL: '/api/bus',
   },
   DRIVERS: {
-    ALL: '/api/driver/all',
+    ALL: '/api/driver',
   },
   TRIPS: {
-    LIST: '/api/trip/List',
+    LIST: '/api/trip',
   },
   STOPS: {
-    ALL: '/api/stop/all',
+    ALL: '/api/stop',
+  },
+  BUS_DRIVER: {
+    ALL: '/api/BusDriver',
+    ASSIGN: '/api/BusDriver/assign',
+    BY_ID: (id) => `/api/BusDriver/${id}`,
+    TODAY_DRIVER: (driverId) => `/api/BusDriver/today/driver/${driverId}`,
   },
 };

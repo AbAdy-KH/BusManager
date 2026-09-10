@@ -1,6 +1,7 @@
 import { Route as RouteIcon, Clock, ArrowRight, ArrowLeft, Bus, User, Calendar, MoreVertical } from 'lucide-react';
 import { getTodayDateString } from '../../services/adminService';
 import { useLanguage } from '../../context/useLanguage';
+import EmptyState from '../common/EmptyState';
 
 function formatTime(dateStr) {
   if (!dateStr) return 'N/A';
@@ -36,31 +37,31 @@ export default function TripsTable({
   return (
     <div className="flex flex-col">
       {/* Date Filter Bar */}
-      <div className="px-4 py-2.5 bg-slate-900/40 border-b border-slate-700/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="px-4 py-3 bg-stone-50 border-b border-stone-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="font-semibold text-slate-300">
+          <Calendar className="w-4 h-4 text-emerald-600" />
+          <span className="font-semibold text-slate-700">
             {selectedDate ? (
               <>
                 {t.trips}:{' '}
-                <span className="text-white font-mono font-bold">
+                <span className="text-slate-900 font-mono font-bold">
                   {selectedDate} {isToday ? `(${t.today})` : ''}
                 </span>
               </>
             ) : (
-              <span className="text-white">{t.allDates}</span>
+              <span className="text-slate-900">{t.allDates}</span>
             )}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-slate-400 flex items-center gap-1.5 font-medium">
+          <label className="text-slate-600 flex items-center gap-2 font-medium">
             {t.filterDate}
             <input
               type="date"
               value={selectedDate || ''}
               onChange={(e) => onDateChange?.(e.target.value || null)}
-              className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
+              className="bg-white border border-stone-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 font-mono shadow-xs"
             />
           </label>
 
@@ -68,7 +69,7 @@ export default function TripsTable({
             <button
               type="button"
               onClick={() => onDateChange?.(getTodayDateString())}
-              className="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-md text-[11px] font-semibold transition-colors cursor-pointer"
+              className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-xs"
             >
               {t.today}
             </button>
@@ -78,7 +79,7 @@ export default function TripsTable({
             <button
               type="button"
               onClick={() => onDateChange?.(null)}
-              className="px-2 py-1 text-slate-400 hover:text-white text-[11px] rounded transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-stone-200 text-xs rounded-lg transition-colors cursor-pointer"
             >
               {t.allDates}
             </button>
@@ -87,73 +88,71 @@ export default function TripsTable({
       </div>
 
       {filteredTrips.length === 0 ? (
-        <div className="text-center py-12 text-slate-500 text-xs">
-          {t.noData}
-        </div>
+        <EmptyState icon={RouteIcon} title={t.noData} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left rtl:text-right text-xs">
-            <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider border-b border-slate-700/60">
+            <thead className="bg-stone-50 text-slate-500 uppercase font-bold tracking-wider border-b border-stone-200/80">
               <tr>
-                <th className="py-3 px-4">{t.route}</th>
-                <th className="py-3 px-4">{t.direction}</th>
-                <th className="py-3 px-4">{t.buses.slice(0, -2) || t.buses}</th>
-                <th className="py-3 px-4">{t.driver}</th>
-                <th className="py-3 px-4">{t.schedule}</th>
-                <th className="py-3 px-4">{t.status}</th>
-                <th className="py-3 px-4 text-right rtl:text-left">{t.actions}</th>
+                <th className="py-3.5 px-4">{t.route}</th>
+                <th className="py-3.5 px-4">{t.direction}</th>
+                <th className="py-3.5 px-4">{t.buses.slice(0, -2) || t.buses}</th>
+                <th className="py-3.5 px-4">{t.driver}</th>
+                <th className="py-3.5 px-4">{t.schedule}</th>
+                <th className="py-3.5 px-4">{t.status}</th>
+                <th className="py-3.5 px-4 text-right rtl:text-left">{t.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-stone-100">
               {filteredTrips.map((trip) => (
-                <tr key={trip.tripId || trip.routeName} className="hover:bg-slate-800/50 transition-colors">
-                  <td className="py-3 px-4 font-semibold text-white flex items-center gap-2">
-                    <div className="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-md">
+                <tr key={trip.tripId || trip.routeName} className="hover:bg-amber-50/30 transition-colors">
+                  <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
+                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
                       <RouteIcon className="w-4 h-4" />
                     </div>
                     <span>{trip.routeName}</span>
                   </td>
-                  <td className="py-3 px-4 text-slate-300">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px] font-mono">
+                  <td className="py-3.5 px-4 text-slate-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-stone-100 text-slate-700 text-[11px] font-mono border border-stone-200 font-medium">
                       {trip.direction || 'Standard'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-slate-300">
+                  <td className="py-3.5 px-4 text-slate-700">
                     {trip.busNumber ? (
-                      <span className="inline-flex items-center gap-1 font-mono">
-                        <Bus className="w-3.5 h-3.5 text-indigo-400" /> #{trip.busNumber}
+                      <span className="inline-flex items-center gap-1.5 font-mono font-medium">
+                        <Bus className="w-3.5 h-3.5 text-indigo-600" /> #{trip.busNumber}
                       </span>
                     ) : (
-                      <span className="text-slate-500 italic">-</span>
+                      <span className="text-slate-400 italic">-</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-slate-300">
+                  <td className="py-3.5 px-4 text-slate-700">
                     {trip.driverName ? (
-                      <span className="inline-flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-blue-400" /> {trip.driverName}
+                      <span className="inline-flex items-center gap-1.5 font-medium">
+                        <User className="w-3.5 h-3.5 text-sky-600" /> {trip.driverName}
                       </span>
                     ) : (
-                      <span className="text-slate-500 italic">-</span>
+                      <span className="text-slate-400 italic">-</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-slate-300">
-                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                      <Clock className="w-3 h-3 text-slate-400" />
+                  <td className="py-3.5 px-4 text-slate-700">
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] font-medium text-slate-700">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span>{formatTime(trip.scheduledStartTime)}</span>
-                      <ArrowIcon className="w-3 h-3 text-slate-500" />
+                      <ArrowIcon className="w-3 h-3 text-slate-400" />
                       <span>{formatTime(trip.scheduledArrivalTime)}</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 capitalize">
+                  <td className="py-3.5 px-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 capitalize shadow-xs">
                       {trip.status || t.active}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right rtl:text-left">
+                  <td className="py-3.5 px-4 text-right rtl:text-left">
                     <button
                       type="button"
                       title={t.actions}
-                      className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>

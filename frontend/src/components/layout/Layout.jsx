@@ -9,7 +9,7 @@ export default function Layout() {
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className="min-h-screen flex flex-col bg-slate-900 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white"
+      className="min-h-screen flex flex-col bg-[#faf7f2] text-slate-800 antialiased selection:bg-indigo-500 selection:text-white"
     >
       <Navbar />
       <main className="flex-1 flex flex-col">

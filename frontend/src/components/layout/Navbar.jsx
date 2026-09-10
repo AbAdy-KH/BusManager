@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useLanguage } from '../../context/useLanguage';
-import { Bus, LogIn, LogOut, LayoutDashboard, Globe, User } from 'lucide-react';
+import { Bus, LogIn, LogOut, LayoutDashboard, ClipboardList, Globe, User } from 'lucide-react';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -12,45 +12,61 @@ export default function Navbar() {
   const isDriver = user?.roles?.includes('Driver');
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-40">
+    <header className="bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-40 shadow-xs">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
-          {/* Logo */}
+        <div className="flex items-center justify-between h-15">
+          {/* Logo & App Name */}
           <Link
             to="/"
-            className="flex items-center gap-2 font-bold text-sm text-white hover:text-indigo-400 transition-colors"
+            className="flex items-center gap-2.5 font-bold text-sm text-slate-800 hover:text-indigo-600 transition-colors"
           >
-            <div className="p-1.5 bg-indigo-600 rounded-lg text-white">
+            <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-sm shadow-indigo-600/20">
               <Bus className="w-4 h-4" />
             </div>
-            <span>{t.appName}</span>
+            <span className="text-base tracking-tight font-extrabold text-slate-800">
+              {t.appName}
+            </span>
           </Link>
 
-          {/* Nav actions */}
-          <div className="flex items-center gap-3">
-            {/* Show Admin Dashboard link ONLY for Admins */}
+          {/* Navigation actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Admin Dashboard link */}
             {isAuthenticated && isAdmin && (
-              <Link
-                to="/admin"
-                className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                  location.pathname === '/admin'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>{t.adminDashboard}</span>
-              </Link>
+              <>
+                <Link
+                  to="/admin"
+                  className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                    location.pathname === '/admin'
+                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100'
+                  }`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>{t.adminDashboard}</span>
+                </Link>
+
+                <Link
+                  to="/admin/attendance"
+                  className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                    location.pathname === '/admin/attendance'
+                      ? 'bg-sky-50 text-sky-700 border border-sky-200/80 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100'
+                  }`}
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  <span>{t.busDriverShort}</span>
+                </Link>
+              </>
             )}
 
-            {/* Show Driver Dashboard link for Drivers */}
+            {/* Driver Dashboard link */}
             {isAuthenticated && isDriver && (
               <Link
                 to="/driver"
-                className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
                   location.pathname === '/driver'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-sky-50 text-sky-700 border border-sky-200/80 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100'
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
@@ -63,22 +79,23 @@ export default function Navbar() {
               type="button"
               onClick={toggleLanguage}
               title="تغيير اللغة / Switch Language"
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold bg-amber-50/80 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg transition-colors cursor-pointer shadow-xs"
             >
-              <Globe className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="font-semibold">{lang === 'ar' ? 'English' : 'العربية'}</span>
+              <Globe className="w-3.5 h-3.5 text-amber-600" />
+              <span>{lang === 'ar' ? 'English' : 'العربية'}</span>
             </button>
 
             {/* User status & Logout */}
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-2 pl-2 rtl:pl-0 rtl:pr-2 border-l rtl:border-l-0 rtl:border-r border-slate-800">
-                <span className="text-xs text-slate-300 font-medium max-w-[120px] truncate hidden md:inline">
+              <div className="flex items-center gap-2 pl-2 rtl:pl-0 rtl:pr-2 border-l rtl:border-l-0 rtl:border-r border-stone-200">
+                <span className="text-xs text-slate-700 font-medium max-w-[120px] truncate hidden md:inline">
                   {user.name || user.email}
                 </span>
                 <button
+                  type="button"
                   onClick={logout}
                   title={t.logout}
-                  className="text-xs text-slate-400 hover:text-rose-400 p-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="text-xs text-slate-500 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -87,9 +104,10 @@ export default function Navbar() {
               location.pathname !== '/' && (
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-xs"
                 >
-                  <LogIn className="w-3.5 h-3.5" /> {t.login}
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>{t.login}</span>
                 </Link>
               )
             )}

@@ -1,5 +1,6 @@
 import { User, Award, MoreVertical } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
+import EmptyState from '../common/EmptyState';
 
 export default function DriversTable({ drivers = [], searchTerm = '' }) {
   const { t } = useLanguage();
@@ -14,45 +15,43 @@ export default function DriversTable({ drivers = [], searchTerm = '' }) {
   });
 
   if (filteredDrivers.length === 0) {
-    return (
-      <div className="text-center py-12 text-slate-500 text-xs">
-        {t.noData}
-      </div>
-    );
+    return <EmptyState icon={User} title={t.noData} />;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left rtl:text-right text-xs">
-        <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider border-b border-slate-700/60">
+        <thead className="bg-stone-50 text-slate-500 uppercase font-bold tracking-wider border-b border-stone-200/80">
           <tr>
-            <th className="py-3 px-4">{t.driverName}</th>
-            <th className="py-3 px-4">{t.licenseNumber}</th>
-            <th className="py-3 px-4">{t.driverId}</th>
-            <th className="py-3 px-4 text-right rtl:text-left">{t.actions}</th>
+            <th className="py-3.5 px-4">{t.driverName}</th>
+            <th className="py-3.5 px-4">{t.licenseNumber}</th>
+            <th className="py-3.5 px-4">{t.driverId}</th>
+            <th className="py-3.5 px-4 text-right rtl:text-left">{t.actions}</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-stone-100">
           {filteredDrivers.map((driver) => (
-            <tr key={driver.driverId || driver.licenseNumber} className="hover:bg-slate-800/50 transition-colors">
-              <td className="py-3 px-4 font-semibold text-white flex items-center gap-2">
-                <div className="p-1.5 bg-blue-500/10 text-blue-400 rounded-md">
+            <tr key={driver.driverId || driver.licenseNumber} className="hover:bg-amber-50/30 transition-colors">
+              <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
+                <div className="p-2 bg-sky-50 text-sky-600 rounded-xl border border-sky-100">
                   <User className="w-4 h-4" />
                 </div>
                 <span>{driver.name}</span>
               </td>
-              <td className="py-3 px-4 text-slate-300 font-mono flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-amber-400" />
-                <span>{driver.licenseNumber}</span>
+              <td className="py-3.5 px-4 text-slate-700 font-mono">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200 font-semibold text-[11px]">
+                  <Award className="w-3.5 h-3.5 text-amber-600" />
+                  <span>{driver.licenseNumber}</span>
+                </span>
               </td>
-              <td className="py-3 px-4 text-slate-400 font-mono text-[11px] max-w-[160px] truncate">
+              <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px] max-w-[160px] truncate">
                 {driver.driverId}
               </td>
-              <td className="py-3 px-4 text-right rtl:text-left">
+              <td className="py-3.5 px-4 text-right rtl:text-left">
                 <button
                   type="button"
                   title={t.actions}
-                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
                 >
                   <MoreVertical className="w-4 h-4" />
                 </button>

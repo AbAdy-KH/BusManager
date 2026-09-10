@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/useAuth';
 import { sendDriverLocation, closeDriverConnection } from '../services/trackingHubService';
+import { fetchTodayDriverAssignment } from '../services/adminService';
 
 export function useDriverLocationSender() {
   const { user } = useAuth();
@@ -15,6 +16,19 @@ export function useDriverLocationSender() {
 
   const coordsRef = useRef(coordinates);
   const busIdRef = useRef(busId);
+
+  // Auto-fetch today's assigned bus for this driver
+  useEffect(() => {
+    if (user?.id && isDriver) {
+      fetchTodayDriverAssignment(user.id)
+        .then((assignment) => {
+          if (assignment && (assignment.busNumber || assignment.busId)) {
+            setBusId(assignment.busNumber || assignment.busId);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.id, isDriver]);
 
   // Synchronize ref values safely inside effect
   useEffect(() => {

@@ -1,18 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/useAuth';
 import { useLanguage } from '../../context/useLanguage';
-import {
-  MapPin,
-  Bus,
-  Plus,
-  Minus,
-  Maximize2,
-  Lock,
-  Layers,
-  Clock,
-  Radio,
-  Navigation,
-} from 'lucide-react';
+import { MapPin, Bus, Layers, Radio, Lock } from 'lucide-react';
+import MapControls from './MapControls';
+import MapLegend from './MapLegend';
+import MapEntityPopup from './MapEntityPopup';
 
 function latLngToWorld(lat, lng) {
   const sinY = Math.min(Math.max(Math.sin((lat * Math.PI) / 180), -0.9999), 0.9999);
@@ -163,33 +155,33 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
   }, [tileZoom, worldCenter, scale, dimensions.w, dimensions.h]);
 
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative flex flex-col h-[560px]">
+    <div className="bg-white border border-stone-200/90 rounded-2xl overflow-hidden shadow-sm relative flex flex-col h-[540px]">
       {/* Top Map Bar */}
-      <div className="bg-slate-900/90 backdrop-blur-md px-4 py-2.5 border-b border-slate-700/80 z-20 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-stone-50/90 backdrop-blur-md px-4 py-3 border-b border-stone-200/80 z-20 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-white flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-indigo-400" /> {t.fleetMap}
+          <span className="font-bold text-slate-800 flex items-center gap-1.5">
+            <Layers className="w-4 h-4 text-indigo-600" /> {t.fleetMap}
           </span>
-          <span className="text-slate-500">•</span>
-          <span className="text-slate-300">
+          <span className="text-stone-300">•</span>
+          <span className="text-slate-600 font-medium">
             {stops.length} {t.stopPoints}
           </span>
           {isAdmin && (
-            <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
-              <Radio className="w-3 h-3 animate-pulse" /> {liveBuses.length} {t.liveBusesCount}
+            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 font-mono text-[11px] font-semibold">
+              <Radio className="w-3 h-3 animate-pulse text-emerald-500" /> {liveBuses.length} {t.liveBusesCount}
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-3">
           {isAdmin ? (
-            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-300 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              {hubStatus === 'connected' ? t.active : hubStatus}
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span>{hubStatus === 'connected' ? t.active : hubStatus}</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-              <Lock className="w-3 h-3" /> {t.adminOnlyTelemetry}
+            <span className="inline-flex items-center gap-1 text-[11px] text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 font-medium">
+              <Lock className="w-3 h-3 text-amber-600" /> {t.adminOnlyTelemetry}
             </span>
           )}
         </div>
@@ -202,12 +194,12 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`flex-1 relative overflow-hidden bg-slate-950 select-none ${
+        className={`flex-1 relative overflow-hidden bg-stone-100 select-none ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
       >
         {/* OpenStreetMap Tiles Layer */}
-        <div className="absolute inset-0 pointer-events-none opacity-85 filter brightness-90 contrast-105">
+        <div className="absolute inset-0 pointer-events-none opacity-90">
           {tiles.map((tile) => (
             <img
               key={tile.key}
@@ -262,15 +254,15 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
               className="absolute z-10 group cursor-pointer focus:outline-none transition-transform hover:scale-125"
             >
               <div
-                className={`p-1.5 rounded-full shadow-lg border-2 flex items-center justify-center ${
+                className={`p-1.5 rounded-full shadow-md border-2 flex items-center justify-center ${
                   stop.isDropPoint
-                    ? 'bg-rose-600 text-white border-white'
+                    ? 'bg-rose-500 text-white border-white'
                     : 'bg-indigo-600 text-white border-white'
                 } ${isSelected ? 'ring-4 ring-indigo-400 scale-125' : ''}`}
               >
                 <MapPin className="w-3.5 h-3.5" />
               </div>
-              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-slate-900/90 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-slate-700">
+              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-white/95 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-stone-200">
                 {stop.name}
               </span>
             </button>
@@ -313,126 +305,37 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                 }}
                 className="absolute z-20 group cursor-pointer focus:outline-none transition-all duration-700 ease-out"
               >
-                <span className="absolute -inset-2 rounded-full bg-emerald-400/40 animate-ping pointer-events-none" />
+                <span className="absolute -inset-2 rounded-full bg-emerald-400/50 animate-ping pointer-events-none" />
 
                 <div
-                  className={`p-2 bg-emerald-600 text-white rounded-full shadow-2xl border-2 border-white flex items-center justify-center ${
+                  className={`p-2 bg-emerald-600 text-white rounded-full shadow-xl border-2 border-white flex items-center justify-center ${
                     isSelected ? 'ring-4 ring-emerald-400 scale-125' : ''
                   }`}
                 >
                   <Bus className="w-4 h-4" />
                 </div>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-slate-900 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap border border-emerald-500/40">
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-white text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap border border-emerald-300">
                   #{bus.busId}
                 </div>
               </button>
             );
           })}
 
-        {/* Selected Entity Popup Overlay */}
-        {selectedEntity && (
-          <div
-            className="absolute bottom-4 left-4 rtl:left-auto rtl:right-4 z-30 bg-slate-900/95 border border-slate-700 text-white p-3.5 rounded-xl shadow-2xl max-w-xs animate-fadeIn backdrop-blur-md text-left rtl:text-right"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-2">
-              {selectedEntity.type === 'stop' ? (
-                <div>
-                  <div className="flex items-center gap-1.5 font-bold text-sm text-white">
-                    <MapPin className="w-4 h-4 text-indigo-400" />
-                    <span>{selectedEntity.data.name}</span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-1">
-                    {selectedEntity.data.address || '-'}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2 font-mono text-[11px] text-slate-400">
-                    <span>
-                      {Number(selectedEntity.data.latitude).toFixed(5)},{' '}
-                      {Number(selectedEntity.data.longitude).toFixed(5)}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex gap-1">
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                      {selectedEntity.data.isDropPoint ? t.dropPoint : t.pickupPoint}
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {selectedEntity.data.isActive ? t.active : t.inactive}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center gap-1.5 font-bold text-sm text-emerald-300">
-                    <Bus className="w-4 h-4 text-emerald-400" />
-                    <span>{t.busNum} #{selectedEntity.data.busId}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-300 mt-1 font-mono">
-                    <Navigation className="w-3 h-3 text-indigo-400" />
-                    <span>
-                      {Number(selectedEntity.data.latitude).toFixed(5)},{' '}
-                      {Number(selectedEntity.data.longitude).toFixed(5)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-1.5">
-                    <Clock className="w-3 h-3 text-slate-500" />
-                    <span>{t.lastPing}: {selectedEntity.data.timestamp || '-'}</span>
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setSelectedEntity(null)}
-                className="text-slate-400 hover:text-white p-1 text-xs cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Map Entity Popup */}
+        <MapEntityPopup
+          entity={selectedEntity}
+          onClose={() => setSelectedEntity(null)}
+        />
 
         {/* Map Controls */}
-        <div className="absolute top-4 right-4 rtl:right-auto rtl:left-4 z-20 flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={() => setZoom((z) => Math.min(18, z + 1))}
-            className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700 rounded-lg shadow-lg transition-colors cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom((z) => Math.max(5, z - 1))}
-            className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700 rounded-lg shadow-lg transition-colors cursor-pointer"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={handleFitAll}
-            className="p-2 bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700 rounded-lg shadow-lg transition-colors cursor-pointer"
-          >
-            <Maximize2 className="w-4 h-4" />
-          </button>
-        </div>
+        <MapControls
+          onZoomIn={() => setZoom((z) => Math.min(18, z + 1))}
+          onZoomOut={() => setZoom((z) => Math.max(5, z - 1))}
+          onFitAll={handleFitAll}
+        />
 
         {/* Legend */}
-        <div className="absolute bottom-4 right-4 rtl:right-auto rtl:left-4 z-20 bg-slate-900/90 border border-slate-700/80 rounded-lg p-2.5 text-[10px] text-slate-300 flex flex-col gap-1.5 shadow-lg backdrop-blur-sm">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 border border-white" />
-            <span>{t.pickupPoint}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 border border-white" />
-            <span>{t.dropPoint}</span>
-          </div>
-          {isAdmin && (
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white animate-pulse" />
-              <span className="text-emerald-300 font-semibold">{t.liveActiveBus}</span>
-            </div>
-          )}
-        </div>
+        <MapLegend isAdmin={isAdmin} />
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
-import { Bus, CheckCircle2, XCircle, MoreVertical } from 'lucide-react';
+import { Bus, MoreVertical } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
+import StatusBadge from '../common/StatusBadge';
+import EmptyState from '../common/EmptyState';
 
 export default function BusesTable({ buses = [], searchTerm = '' }) {
   const { t } = useLanguage();
@@ -14,53 +16,45 @@ export default function BusesTable({ buses = [], searchTerm = '' }) {
   });
 
   if (filteredBuses.length === 0) {
-    return (
-      <div className="text-center py-12 text-slate-500 text-xs">
-        {t.noData}
-      </div>
-    );
+    return <EmptyState icon={Bus} title={t.noData} />;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left rtl:text-right text-xs">
-        <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider border-b border-slate-700/60">
+        <thead className="bg-stone-50 text-slate-500 uppercase font-bold tracking-wider border-b border-stone-200/80">
           <tr>
-            <th className="py-3 px-4">{t.busNumber}</th>
-            <th className="py-3 px-4">{t.plateNumber}</th>
-            <th className="py-3 px-4">{t.capacity}</th>
-            <th className="py-3 px-4">{t.status}</th>
-            <th className="py-3 px-4 text-right rtl:text-left">{t.actions}</th>
+            <th className="py-3.5 px-4">{t.busNumber}</th>
+            <th className="py-3.5 px-4">{t.plateNumber}</th>
+            <th className="py-3.5 px-4">{t.capacity}</th>
+            <th className="py-3.5 px-4">{t.status}</th>
+            <th className="py-3.5 px-4 text-right rtl:text-left">{t.actions}</th>
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-stone-100">
           {filteredBuses.map((bus) => (
-            <tr key={bus.id || bus.number} className="hover:bg-slate-800/50 transition-colors">
-              <td className="py-3 px-4 font-semibold text-white flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-md">
+            <tr key={bus.id || bus.number} className="hover:bg-amber-50/30 transition-colors">
+              <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
                   <Bus className="w-4 h-4" />
                 </div>
                 <span>{t.busNumber} #{bus.number}</span>
               </td>
-              <td className="py-3 px-4 text-slate-300 font-mono">{bus.plateNumber}</td>
-              <td className="py-3 px-4 text-slate-300">{bus.capacity} {t.seats}</td>
-              <td className="py-3 px-4">
-                {bus.isActive ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                    <CheckCircle2 className="w-3 h-3" /> {t.active}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-700/60 text-slate-400 border border-slate-700">
-                    <XCircle className="w-3 h-3" /> {t.inactive}
-                  </span>
-                )}
+              <td className="py-3.5 px-4 text-slate-600 font-mono font-medium">
+                {bus.plateNumber}
               </td>
-              <td className="py-3 px-4 text-right rtl:text-left">
+              <td className="py-3.5 px-4 text-slate-600">
+                <span className="font-semibold text-slate-800">{bus.capacity}</span> {t.seats}
+              </td>
+              <td className="py-3.5 px-4">
+                <StatusBadge status={bus.isActive} type="boolean" />
+              </td>
+              <td className="py-3.5 px-4 text-right rtl:text-left">
                 <button
                   type="button"
                   title={t.actions}
-                  className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
                 >
                   <MoreVertical className="w-4 h-4" />
                 </button>

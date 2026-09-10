@@ -1,4 +1,5 @@
 using BusManager.Application.Common.Interfaces;
+using BusManager.Application.Services;
 using BusManager.Application.Services.Implementations;
 using BusManager.Application.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace BusManager.Application
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IBusService, BusService>();
             services.AddScoped<IDriverService, DriverService>();
+            services.AddScoped<IBusDriverService, BusDriverService>();
             services.AddScoped<IStopPointService, StopPointService>();
             services.AddScoped<ITripService, TripService>();
             

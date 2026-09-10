@@ -14,18 +14,10 @@ import BusesTable from '../components/admin/BusesTable';
 import DriversTable from '../components/admin/DriversTable';
 import TripsTable from '../components/admin/TripsTable';
 import StopsTable from '../components/admin/StopsTable';
-import {
-  Map,
-  Bus,
-  Users,
-  Route as RouteIcon,
-  MapPin,
-  RefreshCw,
-  Search,
-  Plus,
-  AlertCircle,
-  Radio,
-} from 'lucide-react';
+import AdminHeader from '../components/admin/AdminHeader';
+import AdminTabs from '../components/admin/AdminTabs';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import { Map, Bus, Users, Route as RouteIcon, MapPin, AlertCircle } from 'lucide-react';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -161,104 +153,47 @@ export default function AdminPage() {
   return (
     <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            {t.adminDashboard}
-            {isAdmin && hubStatus === 'connected' && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
-                <Radio className="w-3 h-3 animate-pulse" /> {t.active}
-              </span>
-            )}
-          </h1>
-        </div>
-      </div>
+      <AdminHeader
+        isAdmin={isAdmin}
+        hubStatus={hubStatus}
+        loading={loading}
+        onRefresh={() => loadAllData(tripDate)}
+      />
 
       {/* Main Content Card with Navigation Tabs */}
-      <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden flex flex-col">
-        {/* Navigation Tabs Bar & Action Controls */}
-        <div className="p-4 border-b border-slate-700/80 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Tabs */}
-          <div className="flex items-center gap-1 bg-slate-900/70 p-1 rounded-lg border border-slate-700/60 overflow-x-auto">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isSelected = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setSearchTerm('');
-                  }}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {tab.badge || tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Search & Actions for table views */}
-          {activeTab !== 'map' && (
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1 sm:w-56">
-                <Search className="w-3.5 h-3.5 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder={t.search}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-8 rtl:pl-3 rtl:pr-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-left rtl:text-right"
-                />
-              </div>
-
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t.add}</span>
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="bg-white border border-stone-200/90 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+        {/* Navigation Tabs Bar */}
+        <AdminTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={(tabId) => {
+            setActiveTab(tabId);
+            setSearchTerm('');
+          }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
 
         {/* Error Alert */}
         {error && (
-          <div className="m-4 p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 rounded-lg text-xs flex items-center justify-between">
+          <div className="m-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{error}</span>
             </div>
             <button
               onClick={() => loadAllData(tripDate)}
-              className="text-xs underline font-semibold hover:text-white cursor-pointer"
+              className="text-xs font-bold text-rose-700 underline hover:text-rose-900 cursor-pointer"
             >
               {t.retry}
             </button>
           </div>
         )}
 
-        {/* Loading Spinner */}
+        {/* Loading / Content View */}
         {loading && activeTab !== 'map' ? (
-          <div className="py-16 flex flex-col items-center justify-center text-slate-400 gap-2">
-            <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-            <span className="text-xs">{t.signingIn}</span>
-          </div>
+          <LoadingSpinner />
         ) : (
-          /* Tab Views */
           <div>
             {activeTab === 'map' && (
               <div className="p-4">
@@ -267,7 +202,14 @@ export default function AdminPage() {
             )}
             {activeTab === 'buses' && <BusesTable buses={buses} searchTerm={searchTerm} />}
             {activeTab === 'drivers' && <DriversTable drivers={drivers} searchTerm={searchTerm} />}
-            {activeTab === 'trips' && (<TripsTable trips={trips} searchTerm={searchTerm} selectedDate={tripDate} onDateChange={handleTripDateChange} />)}
+            {activeTab === 'trips' && (
+              <TripsTable
+                trips={trips}
+                searchTerm={searchTerm}
+                selectedDate={tripDate}
+                onDateChange={handleTripDateChange}
+              />
+            )}
             {activeTab === 'stops' && <StopsTable stops={stops} searchTerm={searchTerm} />}
           </div>
         )}

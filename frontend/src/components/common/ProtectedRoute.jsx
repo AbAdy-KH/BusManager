@@ -1,7 +1,7 @@
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useLanguage } from '../../context/useLanguage';
-import { ShieldAlert, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, isAuthenticated, loading } = useAuth();
@@ -10,8 +10,9 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
 
   if (loading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+      <div className="min-h-[50vh] flex flex-col items-center justify-center text-slate-500 gap-2">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <span className="text-xs font-semibold text-slate-600">{t.signingIn}</span>
       </div>
     );
   }
@@ -28,11 +29,11 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
 
       return (
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="p-4 bg-rose-500/10 text-rose-400 rounded-2xl border border-rose-500/20 mb-4">
+          <div className="p-4 bg-rose-50 text-rose-600 rounded-3xl border border-rose-200 mb-4 shadow-sm">
             <ShieldAlert className="w-10 h-10" />
           </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">{t.accessDenied}</h2>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm">
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{t.accessDenied}</h2>
+          <p className="text-xs text-slate-500 mt-1.5 max-w-sm">
             {t.accessDeniedAdminOnly}
           </p>
 
@@ -40,7 +41,7 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
             {isDriver ? (
               <Link
                 to="/driver"
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors"
               >
                 <ArrowIcon className="w-3.5 h-3.5" />
                 <span>{t.backToDriverPanel}</span>
@@ -48,7 +49,7 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
             ) : (
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-stone-50 border border-stone-200 rounded-xl transition-colors shadow-xs"
               >
                 <ArrowIcon className="w-3.5 h-3.5" />
                 <span>{t.login}</span>
