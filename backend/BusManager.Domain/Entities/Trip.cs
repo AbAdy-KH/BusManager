@@ -28,8 +28,8 @@ namespace BusManager.Domain.Entities
         public BusDriver? BusDriver { get; set; }
 
         [ForeignKey(nameof(Route))]
-        public string RouteId { get; set; } = string.Empty;
-        public Route Route { get; set; } = null!;
+        public string? RouteId { get; set; }
+        public Route? Route { get; set; }
 
         public TripStatus Status { get; set; } = TripStatus.Scheduled;
 

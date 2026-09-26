@@ -1,5 +1,5 @@
 import { getApiBaseUrl, API_ROUTES } from '../config/api.config';
-import { getAccessToken } from './authService';
+import { getValidAccessToken, refreshTokensApi } from './authService';
 
 /**
  * Returns today's date formatted as YYYY-MM-DD for API filtering.
@@ -13,11 +13,11 @@ export function getTodayDateString() {
 }
 
 /**
- * Helper to perform authenticated HTTP requests.
+ * Helper to perform authenticated HTTP requests with automatic token refresh and retry.
  */
-async function fetchWithAuth(endpoint, options = {}) {
+async function fetchWithAuth(endpoint, options = {}, isRetry = false) {
   const baseUrl = getApiBaseUrl();
-  const token = getAccessToken();
+  const token = await getValidAccessToken();
 
   const headers = {
     Accept: 'application/json',
@@ -33,10 +33,24 @@ async function fetchWithAuth(endpoint, options = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  console.log(options);
+
   const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
   });
+
+  // If 401 Unauthorized received, attempt a single refresh and retry
+  if (response.status === 401 && !isRetry) {
+    try {
+      const refreshed = await refreshTokensApi();
+      if (refreshed?.accessToken) {
+        return fetchWithAuth(endpoint, options, true);
+      }
+    } catch (refreshErr) {
+      console.warn('Token refresh on 401 failed:', refreshErr);
+    }
+  }
 
   if (!response.ok) {
     let errorDetail = `Failed request to ${endpoint} (Status ${response.status})`;
@@ -83,6 +97,48 @@ export async function fetchDrivers() {
 export async function fetchTrips(date = getTodayDateString()) {
   const query = date ? `?date=${encodeURIComponent(date)}` : '';
   return fetchWithAuth(`${API_ROUTES.TRIPS.LIST}${query}`);
+}
+
+/**
+ * Fetches a single trip by ID from GET /api/trip/{id}.
+ * @param {string} id
+ */
+export async function fetchTripById(id) {
+  return fetchWithAuth(API_ROUTES.TRIPS.BY_ID(id));
+}
+
+/**
+ * Creates a new trip by POSTing to /api/trip.
+ * @param {{ routeId?: string|null, scheduledStartTime: string, scheduledArrivalTime: string, direction: number, notes?: string|null }} tripData
+ */
+export async function createTrip(tripData) {
+  return fetchWithAuth(API_ROUTES.TRIPS.CREATE, {
+    method: 'POST',
+    body: tripData,
+  });
+
+}
+ 
+/**
+ * Updates an existing trip by PUT to /api/trip/{id}.
+ * @param {string} id
+ * @param {{ routeId?: string|null, scheduledStartTime: string, scheduledArrivalTime: string, direction: number, notes?: string|null }} tripData
+ */
+export async function updateTrip(id, tripData) {
+  return fetchWithAuth(API_ROUTES.TRIPS.UPDATE(id), {
+    method: 'PUT',
+    body: tripData,
+  });
+}
+
+/**
+ * Deletes a trip by DELETE to /api/trip/{id}.
+ * @param {string} id
+ */
+export async function deleteTrip(id) {
+  return fetchWithAuth(API_ROUTES.TRIPS.DELETE(id), {
+    method: 'DELETE',
+  });
 }
 
 /**

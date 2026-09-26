@@ -14,6 +14,7 @@ import BusesTable from '../components/admin/BusesTable';
 import DriversTable from '../components/admin/DriversTable';
 import TripsTable from '../components/admin/TripsTable';
 import StopsTable from '../components/admin/StopsTable';
+import TripModal from '../components/admin/TripModal';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminTabs from '../components/admin/AdminTabs';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -32,6 +33,9 @@ export default function AdminPage() {
   const [drivers, setDrivers] = useState([]);
   const [trips, setTrips] = useState([]);
   const [stops, setStops] = useState([]);
+
+  const [isTripModalOpen, setIsTripModalOpen] = useState(false);
+  const [selectedTripToEdit, setSelectedTripToEdit] = useState(null);
 
   const [liveBuses, setLiveBuses] = useState({});
   const [hubStatus, setHubStatus] = useState('disconnected');
@@ -140,6 +144,22 @@ export default function AdminPage() {
       .catch((err) => setError(err.message));
   };
 
+  const handleOpenAddTrip = () => {
+    setSelectedTripToEdit(null);
+    setIsTripModalOpen(true);
+  };
+
+  const handleOpenEditTrip = (trip) => {
+    setSelectedTripToEdit(trip);
+    setIsTripModalOpen(true);
+  };
+
+  const handleTripSaved = () => {
+    fetchTrips(tripDate)
+      .then((data) => setTrips(data || []))
+      .catch((err) => setError(err.message));
+  };
+
   const liveBusesList = Object.values(liveBuses);
 
   const tabs = [
@@ -208,12 +228,24 @@ export default function AdminPage() {
                 searchTerm={searchTerm}
                 selectedDate={tripDate}
                 onDateChange={handleTripDateChange}
+                onAddTrip={isAdmin ? handleOpenAddTrip : null}
+                onEditTrip={isAdmin ? handleOpenEditTrip : null}
+                onTripDeleted={handleTripSaved}
               />
             )}
             {activeTab === 'stops' && <StopsTable stops={stops} searchTerm={searchTerm} />}
           </div>
         )}
       </div>
+
+      {/* Trip Modal for Add / Edit */}
+      <TripModal
+        isOpen={isTripModalOpen}
+        onClose={() => setIsTripModalOpen(false)}
+        onSuccess={handleTripSaved}
+        trip={selectedTripToEdit}
+        defaultDate={new Date().toISOString().split('T')[0]}
+      />
     </div>
   );
 }

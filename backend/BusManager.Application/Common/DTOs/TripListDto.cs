@@ -9,7 +9,7 @@ namespace BusManager.Application.Common.DTOs
         string TripId,
         string? DriverName,
         int? BusNumber,
-        string RouteName,
+        string? RouteName,
         string Status,
         DateTime ScheduledStartTime,
         DateTime ScheduledArrivalTime,

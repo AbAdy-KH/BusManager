@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { AuthContext } from './AuthContextInstance';
 import {
   getStoredTokens,
@@ -6,12 +6,42 @@ import {
   loginApi,
   logoutApi,
   refreshTokensApi,
+  onTokensChanged,
 } from '../services/authService';
 
 export function AuthProvider({ children }) {
   const [tokens, setTokens] = useState(() => getStoredTokens());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Synchronize state when tokens change anywhere in authService
+  useEffect(() => {
+    return onTokensChanged((newTokens) => {
+      setTokens(newTokens);
+    });
+  }, []);
+
+  // Proactively refresh tokens before the access token expires
+  useEffect(() => {
+    if (!tokens?.accessToken || !tokens?.refreshToken) return;
+
+    const parsed = parseJwt(tokens.accessToken);
+    if (!parsed?.exp) return;
+
+    // Refresh 1 minute before expiry (or in 10s if already less than 1 min left)
+    const msUntilExpiry = parsed.exp.getTime() - Date.now();
+    const refreshDelay = Math.max(msUntilExpiry - 60 * 1000, 10000);
+
+    const timer = setTimeout(async () => {
+      try {
+        await refreshTokensApi(tokens);
+      } catch (err) {
+        console.warn('Proactive background token refresh failed:', err);
+      }
+    }, refreshDelay);
+
+    return () => clearTimeout(timer);
+  }, [tokens]);
 
   // Derive user directly from tokens
   const user = useMemo(() => {

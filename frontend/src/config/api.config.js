@@ -36,6 +36,10 @@ export const API_ROUTES = {
   },
   TRIPS: {
     LIST: '/api/trip',
+    BY_ID: (id) => `/api/trip/${id}`,
+    CREATE: '/api/trip',
+    UPDATE: (id) => `/api/trip/${id}`,
+    DELETE: (id) => `/api/trip/${id}`,
   },
   STOPS: {
     ALL: '/api/stop',

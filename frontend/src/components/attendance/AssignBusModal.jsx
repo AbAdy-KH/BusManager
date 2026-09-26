@@ -63,12 +63,8 @@ export default function AssignBusModal({
         {/* Header */}
         <div className="bg-cream-100 px-6 py-4 border-b border-cream-300 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-sky-600 text-white rounded-xl shadow-sm">
-              <Bus className="w-5 h-5" />
-            </div>
             <div>
               <h2 className="text-sm font-bold text-gray-900">{t.assignBusModalTitle}</h2>
-              <p className="text-[11px] text-gray-500">{t.busDriverSubtitle}</p>
             </div>
           </div>
           <button
@@ -92,7 +88,6 @@ export default function AssignBusModal({
           {/* Date */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-sky-600" />
               {t.assignmentDate}
             </label>
             <input
@@ -107,7 +102,6 @@ export default function AssignBusModal({
           {/* Driver Select */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-sky-600" />
               {t.selectDriver}
             </label>
             <select
@@ -121,7 +115,7 @@ export default function AssignBusModal({
                 const isAssigned = assignedDriverIds.has(driver.driverId);
                 return (
                   <option key={driver.driverId} value={driver.driverId}>
-                    {driver.name} ({t.licenseNumber}: {driver.licenseNumber}) {isAssigned ? `[✓ ${t.alreadyAssigned}]` : ''}
+                    {driver.name} {isAssigned ? `[✓ ${t.alreadyAssigned}]` : ''}
                   </option>
                 );
               })}
@@ -131,7 +125,6 @@ export default function AssignBusModal({
           {/* Bus Select */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
-              <Bus className="w-3.5 h-3.5 text-sky-600" />
               {t.selectBus}
             </label>
             <select
@@ -147,7 +140,7 @@ export default function AssignBusModal({
                   const isBusAssigned = assignedBusIds.has(bus.id);
                   return (
                     <option key={bus.id} value={bus.id}>
-                      {t.busNumber} #{bus.number} - {bus.plateNumber} ({bus.capacity} {t.seats}) {isBusAssigned ? `[⚠️ ${t.busesInService}]` : ''}
+                      {t.busNumber} #{bus.number} {isBusAssigned ? `[✓ ${t.busesInService}]` : ''}
                     </option>
                   );
                 })}

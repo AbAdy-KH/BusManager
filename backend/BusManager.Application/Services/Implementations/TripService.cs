@@ -1,11 +1,9 @@
 
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Common.Interfaces;
 using BusManager.Application.Services.Interfaces;
 using BusManager.Domain.Entities;
-using NetTopologySuite.Triangulate.Tri;
 
 namespace BusManager.Application.Services.Implementations
 {
@@ -17,7 +15,6 @@ namespace BusManager.Application.Services.Implementations
         {
             _unitOfWork = unitOfWork;
         }        
-
 
         public async Task<IEnumerable<TripListDto>> GetTripsList(DateTime? date = null)
         {
@@ -43,7 +40,7 @@ namespace BusManager.Application.Services.Implementations
                         trip.Id,
                         trip.BusDriver?.Driver.Name,
                         trip.BusDriver?.Bus.Number,
-                        trip.Route.Name,
+                        trip.Route?.Name,
                         trip.Status.ToString(),
                         trip.ScheduledStartTime,
                         trip.ScheduledArrivalTime,
@@ -53,6 +50,57 @@ namespace BusManager.Application.Services.Implementations
             }
 
             return tripListDto;
+        }
+
+        public async Task<Trip?> GetByIdAsync(string id)
+        {
+            return await _unitOfWork.Trip.Get(t => t.Id == id);
+        }
+
+        public async Task<Trip> CreateAsync(TripDto dto)
+        {
+            var trip = new Trip
+            {
+                BusDriverId = dto.BusDriverId,
+                RouteId = dto.RouteId,
+                ScheduledStartTime = dto.ScheduledStartTime.ToLocalTime(),
+                ScheduledArrivalTime = dto.ScheduledArrivalTime.ToLocalTime(),
+                Direction = dto.Direction,
+                Notes = dto.Notes,
+                Status = TripStatus.Scheduled
+            };
+
+            _unitOfWork.Trip.Add(trip);
+            _unitOfWork.Save();
+            return trip;
+        }
+
+        public async Task<Trip> UpdateAsync(string id, TripDto dto)
+        {
+            var trip = await _unitOfWork.Trip.Get(t => t.Id == id);
+            if (trip == null)
+                return null;
+
+            trip.BusDriverId = dto.BusDriverId;
+            trip.RouteId = dto.RouteId;
+
+            trip.ScheduledStartTime = dto.ScheduledStartTime;
+            trip.ScheduledArrivalTime = dto.ScheduledArrivalTime;
+            trip.Direction = dto.Direction;
+
+            trip.Notes = dto.Notes;
+
+            _unitOfWork.Trip.Update(trip);
+            _unitOfWork.Save();
+            return trip;
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            var trip = await _unitOfWork.Trip.Get(t => t.Id == id);
+            if (trip == null) return;
+            _unitOfWork.Trip.Delete(trip);
+            _unitOfWork.Save();
         }
     }
 }

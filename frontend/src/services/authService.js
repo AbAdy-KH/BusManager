@@ -48,13 +48,61 @@ export function parseJwt(token) {
 }
 
 /**
+ * Normalizes token keys to standard camelCase.
+ */
+export function normalizeTokens(tokens) {
+  if (!tokens) return null;
+  const accessToken = tokens.accessToken || tokens.AccessToken;
+  const refreshToken = tokens.refreshToken || tokens.RefreshToken;
+  if (!accessToken && !refreshToken) return null;
+  return {
+    accessToken: accessToken || '',
+    refreshToken: refreshToken || '',
+  };
+}
+
+const tokenListeners = new Set();
+
+/**
+ * Subscribes to token changes across the app.
+ */
+export function onTokensChanged(listener) {
+  tokenListeners.add(listener);
+  return () => tokenListeners.delete(listener);
+}
+
+function notifyTokensChanged(tokens) {
+  tokenListeners.forEach((listener) => {
+    try {
+      listener(tokens);
+    } catch (err) {
+      console.error('Error in token change listener:', err);
+    }
+  });
+}
+
+/**
+ * Checks if a JWT token is expired or will expire within bufferSeconds.
+ */
+export function isTokenExpired(token, bufferSeconds = 30) {
+  if (!token) return true;
+  try {
+    const parsed = parseJwt(token);
+    if (!parsed || !parsed.exp) return true;
+    return parsed.exp.getTime() - bufferSeconds * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
+/**
  * Retrieves saved tokens from localStorage.
  * @returns {{ accessToken: string, refreshToken: string } | null}
  */
 export function getStoredTokens() {
   try {
     const raw = localStorage.getItem(TOKENS_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? normalizeTokens(JSON.parse(raw)) : null;
   } catch {
     return null;
   }
@@ -69,21 +117,52 @@ export function getAccessToken() {
 }
 
 /**
- * Saves tokens to localStorage.
+ * Saves tokens to localStorage and notifies listeners.
  */
 export function storeTokens(tokens) {
-  if (!tokens) {
+  const normalized = normalizeTokens(tokens);
+  if (!normalized) {
     localStorage.removeItem(TOKENS_KEY);
   } else {
-    localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
+    localStorage.setItem(TOKENS_KEY, JSON.stringify(normalized));
   }
+  notifyTokensChanged(normalized);
 }
 
 /**
- * Clears stored tokens.
+ * Clears stored tokens and notifies listeners.
  */
 export function clearStoredTokens() {
   localStorage.removeItem(TOKENS_KEY);
+  notifyTokensChanged(null);
+}
+
+let inFlightRefresh = null;
+
+/**
+ * Obtains a valid access token.
+ * If expired or expiring within bufferSeconds (default 30s), it refreshes it.
+ * Deduplicates concurrent refresh requests so only ONE network request is sent.
+ */
+export async function getValidAccessToken(bufferSeconds = 30) {
+  const tokens = getStoredTokens();
+  if (!tokens?.accessToken) return null;
+
+  if (!isTokenExpired(tokens.accessToken, bufferSeconds)) {
+    return tokens.accessToken;
+  }
+
+  if (!tokens.refreshToken) {
+    clearStoredTokens();
+    return null;
+  }
+
+  try {
+    const refreshed = await refreshTokensApi(tokens);
+    return refreshed?.accessToken || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -127,45 +206,64 @@ export async function loginApi({ email, password }) {
   }
 
   const tokens = await response.json();
-  storeTokens(tokens);
-  return tokens;
+  const normalized = normalizeTokens(tokens);
+  storeTokens(normalized);
+  return normalized;
 }
 
 /**
  * Calls backend POST /api/auth/refresh with TokensDto.
+ * Deduplicates multiple concurrent refresh attempts.
  */
 export async function refreshTokensApi(tokens) {
-  const baseUrl = getApiBaseUrl();
-  const currentTokens = tokens || getStoredTokens();
+  if (inFlightRefresh) {
+    return inFlightRefresh;
+  }
+
+  const currentTokens = normalizeTokens(tokens) || getStoredTokens();
   if (!currentTokens?.accessToken || !currentTokens?.refreshToken) {
     throw new Error('No active tokens to refresh');
   }
 
-  const response = await fetch(`${baseUrl}${API_ROUTES.AUTH.REFRESH}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      AccessToken: currentTokens.accessToken,
-      RefreshToken: currentTokens.refreshToken,
-    }),
-  });
+  const doRefresh = async () => {
+    const baseUrl = getApiBaseUrl();
+    const response = await fetch(`${baseUrl}${API_ROUTES.AUTH.REFRESH}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        AccessToken: currentTokens.accessToken,
+        RefreshToken: currentTokens.refreshToken,
+      }),
+    });
 
-  if (!response.ok) {
-    clearStoredTokens();
-    throw new Error('Session expired. Please log in again.');
-  }
+    if (!response.ok) {
+      clearStoredTokens();
+      throw new Error('Session expired. Please log in again.');
+    }
 
-  const newTokens = await response.json();
-  storeTokens(newTokens);
-  return newTokens;
+    const newTokens = await response.json();
+    const normalized = normalizeTokens(newTokens);
+    storeTokens(normalized);
+    return normalized;
+  };
+
+  inFlightRefresh = (async () => {
+    try {
+      return await doRefresh();
+    } finally {
+      inFlightRefresh = null;
+    }
+  })();
+
+  return inFlightRefresh;
 }
 
 /**
  * Calls backend POST /api/auth/logout with TokensDto.
- */
+*/
 export async function logoutApi() {
   const baseUrl = getApiBaseUrl();
   const tokens = getStoredTokens();

@@ -1,6 +1,6 @@
 import * as signalR from '@microsoft/signalr';
 import { getHubUrl, API_ROUTES } from '../config/api.config';
-import { getAccessToken } from './authService';
+import { getValidAccessToken } from './authService';
 
 /**
  * Creates a SignalR connection with automatic JWT token injection.
@@ -9,8 +9,8 @@ function createHubConnection() {
   const hubUrl = getHubUrl(API_ROUTES.HUBS.TRACKING);
   return new signalR.HubConnectionBuilder()
     .withUrl(hubUrl, {
-      accessTokenFactory: () => {
-        const token = getAccessToken();
+      accessTokenFactory: async () => {
+        const token = await getValidAccessToken();
         return token || '';
       },
     })

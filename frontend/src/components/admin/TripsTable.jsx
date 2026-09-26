@@ -1,5 +1,17 @@
-import { Route as RouteIcon, Clock, ArrowRight, ArrowLeft, Bus, User, Calendar, MoreVertical } from 'lucide-react';
-import { getTodayDateString } from '../../services/adminService';
+import { useState } from 'react';
+import {
+  Route as RouteIcon,
+  Clock,
+  ArrowRight,
+  ArrowLeft,
+  Bus,
+  User,
+  Calendar,
+  Plus,
+  Edit2,
+  Trash2,
+} from 'lucide-react';
+import { getTodayDateString, deleteTrip } from '../../services/adminService';
 import { useLanguage } from '../../context/useLanguage';
 import EmptyState from '../common/EmptyState';
 
@@ -18,10 +30,29 @@ export default function TripsTable({
   searchTerm = '',
   selectedDate = getTodayDateString(),
   onDateChange,
+  onAddTrip,
+  onEditTrip,
+  onTripDeleted,
 }) {
   const { t, isRtl } = useLanguage();
+  const [deletingId, setDeletingId] = useState(null);
   const isToday = selectedDate === getTodayDateString();
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+
+  const handleDelete = async (tripId) => {
+    if (!tripId) return;
+    if (window.confirm(t.deleteTripConfirm)) {
+      try {
+        setDeletingId(tripId);
+        await deleteTrip(tripId);
+        onTripDeleted?.();
+      } catch (err) {
+        alert(err.message || 'Failed to delete trip.');
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
   const filteredTrips = trips.filter((trip) => {
     const term = searchTerm.toLowerCase();
@@ -84,6 +115,17 @@ export default function TripsTable({
               {t.allDates}
             </button>
           )}
+
+          {onAddTrip && (
+            <button
+              type="button"
+              onClick={onAddTrip}
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-xs ml-2 rtl:mr-2 rtl:ml-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{t.addTrip}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -110,7 +152,7 @@ export default function TripsTable({
                     <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
                       <RouteIcon className="w-4 h-4" />
                     </div>
-                    <span>{trip.routeName}</span>
+                    <span>{trip.routeName || '-'}</span>
                   </td>
                   <td className="py-3.5 px-4 text-slate-700">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-stone-100 text-slate-700 text-[11px] font-mono border border-stone-200 font-medium">
@@ -149,13 +191,31 @@ export default function TripsTable({
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right rtl:text-left">
-                    <button
-                      type="button"
-                      title={t.actions}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      {onEditTrip && (
+                        <button
+                          type="button"
+                          title={t.editTrip}
+                          onClick={() => onEditTrip(trip)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title={t.deleteTrip}
+                        onClick={() => handleDelete(trip.tripId || trip.id)}
+                        disabled={deletingId === (trip.tripId || trip.id)}
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {deletingId === (trip.tripId || trip.id) ? (
+                          <div className="w-3.5 h-3.5 border-2 border-rose-600/30 border-t-rose-600 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
