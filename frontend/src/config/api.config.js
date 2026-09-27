@@ -32,7 +32,11 @@ export const API_ROUTES = {
     ALL: '/api/bus',
   },
   DRIVERS: {
-    ALL: '/api/driver',
+    LIST: '/api/driver',
+    BY_ID: (id) => `/api/driver/${id}`,
+    CREATE: '/api/driver',
+    UPDATE: (id) => `/api/driver/${id}`,
+    DELETE: (id) => `/api/driver/${id}`,
   },
   TRIPS: {
     LIST: '/api/trip',

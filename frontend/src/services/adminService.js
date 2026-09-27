@@ -81,11 +81,30 @@ export async function fetchBuses() {
 }
 
 /**
- * Fetches all drivers from GET /api/driver/all.
- * @returns {Promise<Array<{ driverId: string, name: string, licenseNumber: string }>>}
+ * Fetches all drivers from GET /api/driver (list endpoint).
  */
 export async function fetchDrivers() {
-  return fetchWithAuth(API_ROUTES.DRIVERS.ALL);
+  return fetchWithAuth(API_ROUTES.DRIVERS.LIST);
+}
+
+/** Fetch a single driver by ID */
+export async function fetchDriverById(id) {
+  return fetchWithAuth(API_ROUTES.DRIVERS.BY_ID(id));
+}
+
+/** Create a new driver */
+export async function createDriver(driverData) {
+  return fetchWithAuth(API_ROUTES.DRIVERS.CREATE, { method: 'POST', body: driverData });
+}
+
+/** Update an existing driver */
+export async function updateDriver(id, driverData) {
+  return fetchWithAuth(API_ROUTES.DRIVERS.UPDATE(id), { method: 'PUT', body: driverData });
+}
+
+/** Delete a driver */
+export async function deleteDriver(id) {
+  return fetchWithAuth(API_ROUTES.DRIVERS.DELETE(id), { method: 'DELETE' });
 }
 
 /**

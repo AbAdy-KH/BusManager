@@ -15,6 +15,8 @@ import DriversTable from '../components/admin/DriversTable';
 import TripsTable from '../components/admin/TripsTable';
 import StopsTable from '../components/admin/StopsTable';
 import TripModal from '../components/admin/TripModal';
+import { deleteDriver } from '../services/adminService';
+import DriverModal from '../components/admin/DriverModal';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminTabs from '../components/admin/AdminTabs';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -170,6 +172,48 @@ export default function AdminPage() {
     { id: 'stops', label: t.stops, icon: MapPin, count: stops.length },
   ];
 
+// Driver modal state
+  const [isDriverModalOpen, setIsDriverModalOpen] = useState(false);
+  const [selectedDriverToEdit, setSelectedDriverToEdit] = useState(null);
+
+  // Handlers for driver CRUD
+  const handleOpenAddDriver = () => {
+    setSelectedDriverToEdit(null);
+    setIsDriverModalOpen(true);
+  };
+
+  const handleOpenEditDriver = (driver) => {
+    setSelectedDriverToEdit(driver);
+    setIsDriverModalOpen(true);
+  };
+
+  const handleDeleteDriver = (driverId) => {
+    if (window.confirm(t.confirmDeleteDriver)) {
+      deleteDriver(driverId)
+        .then(() => {
+          // Refresh drivers list
+          fetchDrivers().then(setDrivers).catch((err) => setError(err.message));
+        })
+        .catch((err) => setError(err.message));
+    }
+  };
+
+  const handleDriverSaved = () => {
+    // After add/edit, refresh drivers and close modal
+    fetchDrivers().then(setDrivers).catch((err) => setError(err.message));
+    setIsDriverModalOpen(false);
+  };
+
+  // Pass callbacks to DriversTable
+  const driversTableProps = {
+    drivers,
+    searchTerm,
+    onAddDriver: isAdmin ? handleOpenAddDriver : null,
+    onEditDriver: isAdmin ? handleOpenEditDriver : null,
+    onDeleteDriver: isAdmin ? handleDeleteDriver : null,
+  };
+
+  // ... existing code ...
   return (
     <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
       {/* Top Header */}
@@ -221,7 +265,7 @@ export default function AdminPage() {
               </div>
             )}
             {activeTab === 'buses' && <BusesTable buses={buses} searchTerm={searchTerm} />}
-            {activeTab === 'drivers' && <DriversTable drivers={drivers} searchTerm={searchTerm} />}
+            {activeTab === 'drivers' && <DriversTable {...driversTableProps} />}
             {activeTab === 'trips' && (
               <TripsTable
                 trips={trips}
@@ -245,6 +289,14 @@ export default function AdminPage() {
         onSuccess={handleTripSaved}
         trip={selectedTripToEdit}
         defaultDate={new Date().toISOString().split('T')[0]}
+      />
+
+      {/* Driver Modal for Add / Edit */}
+      <DriverModal
+        isOpen={isDriverModalOpen}
+        onClose={() => setIsDriverModalOpen(false)}
+        onSuccess={handleDriverSaved}
+        driver={selectedDriverToEdit}
       />
     </div>
   );

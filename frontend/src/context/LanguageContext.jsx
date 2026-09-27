@@ -113,6 +113,8 @@ const translations = {
     accessDeniedAdminOnly: 'هذه الصفحة مخصصة لمدير النظام (Admin) فقط.',
     backToDriverPanel: 'الذهاب للوحة السائق',
     retry: 'إعادة المحاولة',
+    addDriver: 'اضافة سائق',
+    confirmDeleteDriver: 'هل انت متاكد من حذف هذا السائق؟ لا يمكن التراجع عن هذا الاجراء'
   },
   en: {
     dir: 'ltr',
@@ -195,8 +197,11 @@ const translations = {
     actions: 'Actions',
     driverName: 'Driver Name',
     licenseNumber: 'License Number',
-    driverId: 'Driver ID',
-    route: 'Route',
+    addDriver: 'Add Driver',
+    editDriver: 'Edit Driver',
+    deleteDriver: 'Delete Driver',
+    driverDetailsTitle: 'Driver Details',
+    confirmDeleteDriver: 'Are you sure you want to delete this driver? This action cannot be undone.',
     direction: 'Direction',
     schedule: 'Schedule',
     stopName: 'Stop Name',
@@ -225,6 +230,7 @@ const translations = {
     accessDeniedAdminOnly: 'This page is restricted to system Administrators only.',
     backToDriverPanel: 'Go to Driver Panel',
     retry: 'Retry',
+    addDriver: 'Add Driver',
   },
 };
 
