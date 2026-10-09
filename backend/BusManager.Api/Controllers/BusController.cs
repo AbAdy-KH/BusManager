@@ -39,6 +39,7 @@ namespace BusManager.Api.Controllers
             return Ok(bus);
         }
 
+        [HttpPost]
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> Create([FromBody] BusDto busDto)

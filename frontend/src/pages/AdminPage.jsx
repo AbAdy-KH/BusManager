@@ -15,8 +15,10 @@ import DriversTable from '../components/admin/DriversTable';
 import TripsTable from '../components/admin/TripsTable';
 import StopsTable from '../components/admin/StopsTable';
 import TripModal from '../components/admin/TripModal';
-import { deleteDriver } from '../services/adminService';
+import { deleteDriver, deleteBus, deleteStop } from '../services/adminService';
 import DriverModal from '../components/admin/DriverModal';
+import BusModal from '../components/admin/BusModal';
+import StopModal from '../components/admin/StopModal';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminTabs from '../components/admin/AdminTabs';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -172,9 +174,17 @@ export default function AdminPage() {
     { id: 'stops', label: t.stops, icon: MapPin, count: stops.length },
   ];
 
-// Driver modal state
+  // Driver modal state
   const [isDriverModalOpen, setIsDriverModalOpen] = useState(false);
   const [selectedDriverToEdit, setSelectedDriverToEdit] = useState(null);
+
+  // Bus modal state
+  const [isBusModalOpen, setIsBusModalOpen] = useState(false);
+  const [selectedBusToEdit, setSelectedBusToEdit] = useState(null);
+
+  // Stop modal state
+  const [isStopModalOpen, setIsStopModalOpen] = useState(false);
+  const [selectedStopToEdit, setSelectedStopToEdit] = useState(null);
 
   // Handlers for driver CRUD
   const handleOpenAddDriver = () => {
@@ -204,6 +214,62 @@ export default function AdminPage() {
     setIsDriverModalOpen(false);
   };
 
+  // Handlers for bus CRUD
+  const handleOpenAddBus = () => {
+    setSelectedBusToEdit(null);
+    setIsBusModalOpen(true);
+  };
+
+  const handleOpenEditBus = (bus) => {
+    setSelectedBusToEdit(bus);
+    setIsBusModalOpen(true);
+  };
+
+  const handleDeleteBus = (busId) => {
+    if (window.confirm(t.confirmDeleteBus)) {
+      deleteBus(busId)
+        .then(() => {
+          // Refresh buses list
+          fetchBuses().then(setBuses).catch((err) => setError(err.message));
+        })
+        .catch((err) => setError(err.message));
+    }
+  };
+
+  const handleBusSaved = () => {
+    // After add/edit, refresh buses and close modal
+    fetchBuses().then(setBuses).catch((err) => setError(err.message));
+    setIsBusModalOpen(false);
+  };
+
+  // Handlers for stop CRUD
+  const handleOpenAddStop = () => {
+    setSelectedStopToEdit(null);
+    setIsStopModalOpen(true);
+  };
+
+  const handleOpenEditStop = (stop) => {
+    setSelectedStopToEdit(stop);
+    setIsStopModalOpen(true);
+  };
+
+  const handleDeleteStop = (stopId) => {
+    if (window.confirm(t.confirmDeleteStop)) {
+      deleteStop(stopId)
+        .then(() => {
+          // Refresh stops list
+          fetchStops().then(setStops).catch((err) => setError(err.message));
+        })
+        .catch((err) => setError(err.message));
+    }
+  };
+
+  const handleStopSaved = () => {
+    // After add/edit, refresh stops and close modal
+    fetchStops().then(setStops).catch((err) => setError(err.message));
+    setIsStopModalOpen(false);
+  };
+
   // Pass callbacks to DriversTable
   const driversTableProps = {
     drivers,
@@ -213,7 +279,24 @@ export default function AdminPage() {
     onDeleteDriver: isAdmin ? handleDeleteDriver : null,
   };
 
-  // ... existing code ...
+  // Pass callbacks to BusesTable
+  const busesTableProps = {
+    buses,
+    searchTerm,
+    onAddBus: isAdmin ? handleOpenAddBus : null,
+    onEditBus: isAdmin ? handleOpenEditBus : null,
+    onDeleteBus: isAdmin ? handleDeleteBus : null,
+  };
+
+  // Pass callbacks to StopsTable
+  const stopsTableProps = {
+    stops,
+    searchTerm,
+    onAddStop: isAdmin ? handleOpenAddStop : null,
+    onEditStop: isAdmin ? handleOpenEditStop : null,
+    onDeleteStop: isAdmin ? handleDeleteStop : null,
+  };
+
   return (
     <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
       {/* Top Header */}
@@ -264,7 +347,7 @@ export default function AdminPage() {
                 <FleetMap stops={stops} liveBuses={liveBusesList} hubStatus={hubStatus} />
               </div>
             )}
-            {activeTab === 'buses' && <BusesTable buses={buses} searchTerm={searchTerm} />}
+            {activeTab === 'buses' && <BusesTable {...busesTableProps} />}
             {activeTab === 'drivers' && <DriversTable {...driversTableProps} />}
             {activeTab === 'trips' && (
               <TripsTable
@@ -277,7 +360,7 @@ export default function AdminPage() {
                 onTripDeleted={handleTripSaved}
               />
             )}
-            {activeTab === 'stops' && <StopsTable stops={stops} searchTerm={searchTerm} />}
+            {activeTab === 'stops' && <StopsTable {...stopsTableProps} />}
           </div>
         )}
       </div>
@@ -297,6 +380,22 @@ export default function AdminPage() {
         onClose={() => setIsDriverModalOpen(false)}
         onSuccess={handleDriverSaved}
         driver={selectedDriverToEdit}
+      />
+
+      {/* Bus Modal for Add / Edit */}
+      <BusModal
+        isOpen={isBusModalOpen}
+        onClose={() => setIsBusModalOpen(false)}
+        onSuccess={handleBusSaved}
+        bus={selectedBusToEdit}
+      />
+
+      {/* Stop Modal for Add / Edit */}
+      <StopModal
+        isOpen={isStopModalOpen}
+        onClose={() => setIsStopModalOpen(false)}
+        onSuccess={handleStopSaved}
+        stop={selectedStopToEdit}
       />
     </div>
   );

@@ -30,6 +30,10 @@ export const API_ROUTES = {
   },
   BUSES: {
     ALL: '/api/bus',
+    BY_ID: (id) => `/api/bus/${id}`,
+    CREATE: '/api/bus/create',
+    UPDATE: (id) => `/api/bus/${id}`,
+    DELETE: (id) => `/api/bus/${id}`,
   },
   DRIVERS: {
     LIST: '/api/driver',
@@ -47,6 +51,10 @@ export const API_ROUTES = {
   },
   STOPS: {
     ALL: '/api/stop',
+    BY_ID: (id) => `/api/stop/${id}`,
+    CREATE: '/api/stop',
+    UPDATE: (id) => `/api/stop/${id}`,
+    DELETE: (id) => `/api/stop/${id}`,
   },
   BUS_DRIVER: {
     ALL: '/api/BusDriver',

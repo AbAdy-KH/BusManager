@@ -37,7 +37,6 @@ export default function DriversTable({ drivers = [], searchTerm = '', onAddDrive
           <tr>
             <th className="py-3.5 px-4">{t.driverName}</th>
             <th className="py-3.5 px-4">{t.licenseNumber}</th>
-            <th className="py-3.5 px-4">{t.driverId}</th>
             <th className="py-3.5 px-4 text-right rtl:text-left">{t.actions}</th>
           </tr>
         </thead>
@@ -55,9 +54,6 @@ export default function DriversTable({ drivers = [], searchTerm = '', onAddDrive
                   <Award className="w-3.5 h-3.5 text-amber-600" />
                   <span>{driver.licenseNumber}</span>
                 </span>
-              </td>
-              <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px] max-w-[160px] truncate">
-                {driver.driverId}
               </td>
               <td className="py-3.5 px-4 text-right rtl:text-left space-x-2">
                 {onEditDriver && (

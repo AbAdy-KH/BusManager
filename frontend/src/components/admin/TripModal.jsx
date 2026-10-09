@@ -69,10 +69,6 @@ export default function TripModal({
     setLoadingAssignments(true);
     try {
       let data = await fetchBusDriverAssignments(dateStr || null);
-      if ((!data || data.length === 0) && dateStr) {
-        // Fallback to all assignments if none found for this specific date
-        data = await fetchBusDriverAssignments(null);
-      }
       setAssignments(data || []);
     } catch (err) {
       console.warn('Failed to load assignments for trip modal:', err);

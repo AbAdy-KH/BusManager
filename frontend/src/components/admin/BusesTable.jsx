@@ -1,9 +1,15 @@
-import { Bus, MoreVertical } from 'lucide-react';
+import { Bus, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
 import StatusBadge from '../common/StatusBadge';
 import EmptyState from '../common/EmptyState';
 
-export default function BusesTable({ buses = [], searchTerm = '' }) {
+export default function BusesTable({
+  buses = [],
+  searchTerm = '',
+  onAddBus,
+  onEditBus,
+  onDeleteBus,
+}) {
   const { t } = useLanguage();
 
   const filteredBuses = buses.filter((bus) => {
@@ -16,11 +22,40 @@ export default function BusesTable({ buses = [], searchTerm = '' }) {
   });
 
   if (filteredBuses.length === 0) {
-    return <EmptyState icon={Bus} title={t.noData} />;
+    return (
+      <div>
+        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <h2 className="text-sm font-medium text-slate-600">{t.buses}</h2>
+          {onAddBus && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-xs ml-2 rtl:mr-2 rtl:ml-0"
+              onClick={onAddBus}
+            >
+              {t.addBus}
+            </button>
+          )}
+        </div>
+        <EmptyState icon={Bus} title={t.noData} />
+      </div>
+    );
   }
 
   return (
     <div className="overflow-x-auto">
+      <div className="px-4 py-3 bg-stone-50 border-b border-stone-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <h2 className="text-sm font-medium text-slate-600">{t.buses}</h2>
+        {onAddBus && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-xs ml-2 rtl:mr-2 rtl:ml-0"
+            onClick={onAddBus}
+          >
+            {t.addBus}
+          </button>
+        )}
+      </div>
+
       <table className="w-full text-left rtl:text-right text-xs">
         <thead className="bg-stone-50 text-slate-500 uppercase font-bold tracking-wider border-b border-stone-200/80">
           <tr>
@@ -50,14 +85,27 @@ export default function BusesTable({ buses = [], searchTerm = '' }) {
               <td className="py-3.5 px-4">
                 <StatusBadge status={bus.isActive} type="boolean" />
               </td>
-              <td className="py-3.5 px-4 text-right rtl:text-left">
-                <button
-                  type="button"
-                  title={t.actions}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </button>
+              <td className="py-3.5 px-4 text-right rtl:text-left space-x-2">
+                {onEditBus && (
+                  <button
+                    type="button"
+                    title={t.editBus}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-stone-100 transition-colors cursor-pointer"
+                    onClick={() => onEditBus(bus)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                )}
+                {onDeleteBus && (
+                  <button
+                    type="button"
+                    title={t.deleteBus}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    onClick={() => onDeleteBus(bus.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </td>
             </tr>
           ))}

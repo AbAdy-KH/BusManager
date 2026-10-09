@@ -80,6 +80,26 @@ export async function fetchBuses() {
   return fetchWithAuth(API_ROUTES.BUSES.ALL);
 }
 
+/** Fetch a single bus by ID */
+export async function fetchBusById(id) {
+  return fetchWithAuth(API_ROUTES.BUSES.BY_ID(id));
+}
+
+/** Create a new bus */
+export async function createBus(busData) {
+  return fetchWithAuth(API_ROUTES.BUSES.CREATE, { method: 'POST', body: busData });
+}
+
+/** Update an existing bus */
+export async function updateBus(id, busData) {
+  return fetchWithAuth(API_ROUTES.BUSES.UPDATE(id), { method: 'PUT', body: busData });
+}
+
+/** Delete a bus */
+export async function deleteBus(id) {
+  return fetchWithAuth(API_ROUTES.BUSES.DELETE(id), { method: 'DELETE' });
+}
+
 /**
  * Fetches all drivers from GET /api/driver (list endpoint).
  */
@@ -166,6 +186,26 @@ export async function deleteTrip(id) {
  */
 export async function fetchStops() {
   return fetchWithAuth(API_ROUTES.STOPS.ALL);
+}
+
+/** Fetch a single stop by ID */
+export async function fetchStopById(id) {
+  return fetchWithAuth(API_ROUTES.STOPS.BY_ID(id));
+}
+
+/** Create a new stop */
+export async function createStop(stopData) {
+  return fetchWithAuth(API_ROUTES.STOPS.CREATE, { method: 'POST', body: stopData });
+}
+
+/** Update an existing stop */
+export async function updateStop(id, stopData) {
+  return fetchWithAuth(API_ROUTES.STOPS.UPDATE(id), { method: 'PUT', body: stopData });
+}
+
+/** Delete a stop */
+export async function deleteStop(id) {
+  return fetchWithAuth(API_ROUTES.STOPS.DELETE(id), { method: 'DELETE' });
 }
 
 /**
