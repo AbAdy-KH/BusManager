@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Trash2,
   AlertTriangle,
+  Plus
 } from 'lucide-react';
 
 function formatAssignmentTime(isoDateStr) {
@@ -51,24 +52,6 @@ export default function AttendanceTable({
       }
     }
   };
-
-  if (filtered.length === 0) {
-    return (
-      <div className="py-14 px-4 text-center flex flex-col items-center justify-center">
-        <h3 className="text-sm font-bold text-gray-800">{t.noData}</h3>
-
-        {!searchTerm && onOpenAssignModal && (
-          <button
-            type="button"
-            onClick={onOpenAssignModal}
-            className="mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
-          >
-            {t.assignBus}
-          </button>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className="overflow-x-auto">

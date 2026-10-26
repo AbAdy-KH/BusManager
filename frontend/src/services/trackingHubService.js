@@ -3,16 +3,12 @@ import { getHubUrl, API_ROUTES } from '../config/api.config';
 import { getValidAccessToken } from './authService';
 
 /**
- * Creates a SignalR connection with automatic JWT token injection.
+ * Creates and configures a standard SignalR Hub Connection.
  */
 function createHubConnection() {
-  const hubUrl = getHubUrl(API_ROUTES.HUBS.TRACKING);
   return new signalR.HubConnectionBuilder()
-    .withUrl(hubUrl, {
-      accessTokenFactory: async () => {
-        const token = await getValidAccessToken();
-        return token || '';
-      },
+    .withUrl(getHubUrl(API_ROUTES.HUBS.TRACKING), {
+      accessTokenFactory: async () => (await getValidAccessToken()) || '',
     })
     .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
     .configureLogging(signalR.LogLevel.Warning)
@@ -20,24 +16,22 @@ function createHubConnection() {
 }
 
 /**
- * Connects to TrackingHub and joins the Admins group (Admin only).
- * Listens for live bus locations from driver emissions.
- *
- * @param {Object} options
- * @param {(location: { busId: number, latitude: number, longitude: number }) => void} options.onLocationReceived
- * @param {(status: 'connecting' | 'connected' | 'disconnected' | 'error') => void} [options.onStatusChange]
- * @returns {Promise<{ connection: signalR.HubConnection, stop: () => Promise<void> }>}
+ * Starts tracking stream for Admins.
  */
 export async function startAdminTracking({ onLocationReceived, onStatusChange }) {
   const connection = createHubConnection();
 
-  connection.onreconnecting(() => onStatusChange?.('connecting'));
-  connection.onreconnected(() => {
-    onStatusChange?.('connected');
-    connection.invoke('JoinAdminGroup').catch(() => {});
-  });
-  connection.onclose(() => onStatusChange?.('disconnected'));
+  const updateStatus = (status) => onStatusChange?.(status);
 
+  // Bind connection status hooks
+  connection.onreconnecting(() => updateStatus('connecting'));
+  connection.onreconnected(async () => {
+    updateStatus('connected');
+    await connection.invoke('JoinAdminGroup').catch(console.error);
+  });
+  connection.onclose(() => updateStatus('disconnected'));
+
+  // Bind location handler
   if (onLocationReceived) {
     connection.on('ReceiveBusLocation', (loc) => {
       onLocationReceived({
@@ -49,58 +43,61 @@ export async function startAdminTracking({ onLocationReceived, onStatusChange })
     });
   }
 
-  onStatusChange?.('connecting');
+  updateStatus('connecting');
   await connection.start();
-  onStatusChange?.('connected');
-
-  // Join admin group to receive broadcasts
   await connection.invoke('JoinAdminGroup');
+  updateStatus('connected');
 
   return {
     connection,
     stop: async () => {
-      try {
-        await connection.stop();
-        onStatusChange?.('disconnected');
-      } catch {
-        // ignore
-      }
+      await connection.stop().catch(() => {});
+      updateStatus('disconnected');
     },
   };
 }
 
 /**
- * Sends a single bus location to the server from a driver client.
- *
- * @param {{ busId: number, latitude: number, longitude: number }} location
+ * Sends driver location updates sequentially, safely managing connection initialization.
  */
-let sharedDriverConnection = null;
+let driverConnection = null;
+let connectionPromise = null;
 
-export async function sendDriverLocation({ busId, latitude, longitude }) {
-  if (!sharedDriverConnection || sharedDriverConnection.state === signalR.HubConnectionState.Disconnected) {
-    sharedDriverConnection = createHubConnection();
-    await sharedDriverConnection.start();
+async function getDriverConnection() {
+  if (driverConnection?.state === signalR.HubConnectionState.Connected) {
+    return driverConnection;
   }
 
-  if (sharedDriverConnection.state === signalR.HubConnectionState.Connected) {
-    await sharedDriverConnection.invoke('SendBusLocation', {
-      busId: Number(busId),
-      latitude: Number(latitude),
-      longitude: Number(longitude),
+  // Prevent multiple concurrent .start() calls (race condition)
+  if (!connectionPromise) {
+    driverConnection = createHubConnection();
+    connectionPromise = driverConnection
+      .start()
+      .then(() => driverConnection)
+      .finally(() => {
+        connectionPromise = null;
+      });
+  }
+
+  return connectionPromise;
+}
+
+export async function sendDriverLocation(location) {
+  try {
+    const connection = await getDriverConnection();
+    await connection.invoke('SendBusLocation', {
+      busId: Number(location.busId),
+      latitude: Number(location.latitude),
+      longitude: Number(location.longitude),
     });
+  } catch (err) {
+    console.error('Failed to send driver location:', err);
   }
 }
 
-/**
- * Closes the active driver connection if open.
- */
 export async function closeDriverConnection() {
-  if (sharedDriverConnection) {
-    try {
-      await sharedDriverConnection.stop();
-    } catch {
-      // ignore
-    }
-    sharedDriverConnection = null;
+  if (driverConnection) {
+    await driverConnection.stop().catch(() => {});
+    driverConnection = null;
   }
 }
