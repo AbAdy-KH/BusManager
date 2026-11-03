@@ -1,7 +1,5 @@
 import { Bus, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
-import StatusBadge from '../common/StatusBadge';
-import EmptyState from '../common/EmptyState';
 
 export default function BusesTable({
   buses = [],
@@ -36,7 +34,6 @@ export default function BusesTable({
             </button>
           )}
         </div>
-        <EmptyState icon={Bus} title={t.noData} />
       </div>
     );
   }
@@ -81,9 +78,6 @@ export default function BusesTable({
               </td>
               <td className="py-3.5 px-4 text-slate-600">
                 <span className="font-semibold text-slate-800">{bus.capacity}</span> {t.seats}
-              </td>
-              <td className="py-3.5 px-4">
-                <StatusBadge status={bus.isActive} type="boolean" />
               </td>
               <td className="py-3.5 px-4 text-right rtl:text-left space-x-2">
                 {onEditBus && (

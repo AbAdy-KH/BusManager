@@ -6,6 +6,7 @@ import {
   fetchDrivers,
   fetchTrips,
   fetchStops,
+  fetchRoutes,
   getTodayDateString,
 } from '../services/adminService';
 import { startAdminTracking } from '../services/trackingHubService';
@@ -14,9 +15,9 @@ import BusesTab from '../components/admin/tabs/BusesTab';
 import DriversTab from '../components/admin/tabs/DriversTab';
 import TripsTab from '../components/admin/tabs/TripsTab';
 import StopsTab from '../components/admin/tabs/StopsTab';
+import RoutesTab from '../components/admin/tabs/RoutesTab';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminTabs from '../components/admin/AdminTabs';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Map, Bus, Users, Route as RouteIcon, MapPin, AlertCircle } from 'lucide-react';
 
 export default function AdminPage() {
@@ -32,6 +33,7 @@ export default function AdminPage() {
   const [drivers, setDrivers] = useState([]);
   const [trips, setTrips] = useState([]);
   const [stops, setStops] = useState([]);
+  const [routes, setRoutes] = useState([]);
 
   const [liveBuses, setLiveBuses] = useState({});
   const [hubStatus, setHubStatus] = useState('disconnected');
@@ -43,23 +45,25 @@ export default function AdminPage() {
     setLoading(true);
     setError(null);
     try {
-      const [busesData, driversData, tripsData, stopsData] = await Promise.allSettled([
+      const [busesData, driversData, tripsData, stopsData, routesData] = await Promise.allSettled([
         fetchBuses(),
         fetchDrivers(),
         fetchTrips(selectedTripDate),
         fetchStops(),
+        fetchRoutes(),
       ]);
 
       if (busesData.status === 'fulfilled') setBuses(busesData.value || []);
       if (driversData.status === 'fulfilled') setDrivers(driversData.value || []);
       if (tripsData.status === 'fulfilled') setTrips(tripsData.value || []);
       if (stopsData.status === 'fulfilled') setStops(stopsData.value || []);
+      if (routesData.status === 'fulfilled') setRoutes(routesData.value || []);
 
-      const failed = [busesData, driversData, tripsData, stopsData].filter(
+      const failed = [busesData, driversData, tripsData, stopsData, routesData].filter(
         (r) => r.status === 'rejected'
       );
 
-      if (failed.length === 4) {
+      if (failed.length === 5) {
         throw new Error(failed[0].reason?.message || 'Could not connect to backend services.');
       }
     } catch (err) {
@@ -107,9 +111,10 @@ export default function AdminPage() {
 
   const tabs = [
     { id: 'map', label: t.fleetMap, icon: Map, count: stops.length, badge: isAdmin ? `${liveBusesList.length} ${t.active}` : null },
+    { id: 'trips', label: t.trips, icon: RouteIcon, count: trips.length },
+    { id: 'routes', label: t.routes, icon: RouteIcon, count: routes.length },
     { id: 'buses', label: t.buses, icon: Bus, count: buses.length },
     { id: 'drivers', label: t.drivers, icon: Users, count: drivers.length },
-    { id: 'trips', label: t.trips, icon: RouteIcon, count: trips.length },
     { id: 'stops', label: t.stops, icon: MapPin, count: stops.length },
   ];
 
@@ -154,14 +159,23 @@ export default function AdminPage() {
         )}
 
         {/* Loading / Content View */}
-        {loading && activeTab !== 'map' ? (
-          <LoadingSpinner />
-        ) : (
+        {!loading && (
           <div>
             {activeTab === 'map' && (
               <div className="p-4">
                 <FleetMap stops={stops} liveBuses={liveBusesList} hubStatus={hubStatus} />
               </div>
+            )}
+            {activeTab === 'trips' && (
+              <TripsTab
+                trips={trips}
+                setTrips={setTrips}
+                tripDate={tripDate}
+                setTripDate={setTripDate}
+                searchTerm={searchTerm}
+                isAdmin={isAdmin}
+                onError={setError}
+              />
             )}
             {activeTab === 'buses' && (
               <BusesTab
@@ -181,21 +195,19 @@ export default function AdminPage() {
                 onError={setError}
               />
             )}
-            {activeTab === 'trips' && (
-              <TripsTab
-                trips={trips}
-                setTrips={setTrips}
-                tripDate={tripDate}
-                setTripDate={setTripDate}
+            {activeTab === 'stops' && (
+              <StopsTab
+                stops={stops}
+                setStops={setStops}
                 searchTerm={searchTerm}
                 isAdmin={isAdmin}
                 onError={setError}
               />
             )}
-            {activeTab === 'stops' && (
-              <StopsTab
-                stops={stops}
-                setStops={setStops}
+            {activeTab === 'routes' && (
+              <RoutesTab
+                routes={routes}
+                setRoutes={setRoutes}
                 searchTerm={searchTerm}
                 isAdmin={isAdmin}
                 onError={setError}

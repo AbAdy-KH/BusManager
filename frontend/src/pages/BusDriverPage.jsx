@@ -5,7 +5,6 @@ import AttendanceHeader from '../components/attendance/AttendanceHeader';
 import AttendanceStats from '../components/attendance/AttendanceStats';
 import AttendanceTable from '../components/attendance/AttendanceTable';
 import AssignBusModal from '../components/attendance/AssignBusModal';
-import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Search, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function BusDriverPage() {
@@ -95,11 +94,7 @@ export default function BusDriverPage() {
         </div>
 
         {/* Table Content */}
-        {loading ? (
-          <div className="py-16">
-            <LoadingSpinner />
-          </div>
-        ) : (
+        {!loading && (
           <AttendanceTable
             assignments={assignments}
             searchTerm={searchTerm}

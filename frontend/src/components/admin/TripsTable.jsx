@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { getTodayDateString, deleteTrip } from '../../services/adminService';
 import { useLanguage } from '../../context/useLanguage';
-import EmptyState from '../common/EmptyState';
 
 function formatTime(dateStr) {
   if (!dateStr) return 'N/A';
@@ -54,8 +53,13 @@ export default function TripsTable({
     }
   };
 
+  
+
   const filteredTrips = trips.filter((trip) => {
     const term = searchTerm.toLowerCase();
+    trip.direction = (trip.direction === 'Outbound' ? 'ذهاب' : 'اياب');
+    // trip.status = (trip.status === 'Scheduled' ? 'مجدولة' : 'غير ذلك');
+    
     return (
       trip.routeName?.toLowerCase().includes(term) ||
       trip.driverName?.toLowerCase().includes(term) ||
@@ -129,9 +133,7 @@ export default function TripsTable({
         </div>
       </div>
 
-      {filteredTrips.length === 0 ? (
-        <EmptyState icon={RouteIcon} title={t.noData} />
-      ) : (
+      {filteredTrips.length != 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-left rtl:text-right text-xs">
             <thead className="bg-stone-50 text-slate-500 uppercase font-bold tracking-wider border-b border-stone-200/80">
@@ -156,7 +158,7 @@ export default function TripsTable({
                   </td>
                   <td className="py-3.5 px-4 text-slate-700">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-stone-100 text-slate-700 text-[11px] font-mono border border-stone-200 font-medium">
-                      {trip.direction || 'Standard'}
+                      {trip.direction}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-slate-700">
@@ -187,7 +189,7 @@ export default function TripsTable({
                   </td>
                   <td className="py-3.5 px-4">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 capitalize shadow-xs">
-                      {trip.status || t.active}
+                      {trip.status}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right rtl:text-left">

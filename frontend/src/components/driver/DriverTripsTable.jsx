@@ -1,7 +1,5 @@
 import { Route as RouteIcon, Calendar } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
-import LoadingSpinner from '../common/LoadingSpinner';
-import EmptyState from '../common/EmptyState';
 
 function formatTime(dateStr) {
   if (!dateStr) return 'N/A';
@@ -35,11 +33,7 @@ export default function DriverTripsTable({ trips = [], loading, dateStr, busId }
         </div>
       </div>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : trips.length === 0 ? (
-        <EmptyState icon={RouteIcon} title={t.noData} />
-      ) : (
+      {!loading && (
         <div className="overflow-x-auto">
           <table className="w-full text-left rtl:text-right text-xs">
             <thead className="bg-stone-50 text-slate-500 uppercase font-bold tracking-wider border-b border-stone-200/80">

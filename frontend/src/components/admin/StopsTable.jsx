@@ -1,7 +1,5 @@
 import { MapPin, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
-import StatusBadge from '../common/StatusBadge';
-import EmptyState from '../common/EmptyState';
 
 export default function StopsTable({
   stops = [],
@@ -36,7 +34,6 @@ export default function StopsTable({
             </button>
           )}
         </div>
-        <EmptyState icon={MapPin} title={t.noData} />
       </div>
     );
   }
@@ -98,9 +95,6 @@ export default function StopsTable({
                 >
                   {stop.isDropPoint ? t.dropPoint : t.pickupPoint}
                 </span>
-              </td>
-              <td className="py-3.5 px-4">
-                <StatusBadge status={stop.isActive} type="boolean" />
               </td>
               <td className="py-3.5 px-4 text-right rtl:text-left space-x-2">
                 {onEditStop && (

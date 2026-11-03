@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/layout/Layout';
-import ProtectedRoute from './components/common/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
 import DriverPage from './pages/DriverPage';
@@ -23,9 +22,7 @@ export default function App() {
             <Route
               path="admin"
               element={
-                <ProtectedRoute allowedRoles={['Admin']}>
                   <AdminPage />
-                </ProtectedRoute>
               }
             />
 
@@ -33,9 +30,7 @@ export default function App() {
             <Route
               path="admin/attendance"
               element={
-                <ProtectedRoute allowedRoles={['Admin']}>
                   <BusDriverPage />
-                </ProtectedRoute>
               }
             />
             <Route path="bus-driver" element={<Navigate to="/admin/attendance" replace />} />
@@ -45,9 +40,7 @@ export default function App() {
             <Route
               path="driver"
               element={
-                <ProtectedRoute allowedRoles={['Driver', 'Admin']}>
                   <DriverPage />
-                </ProtectedRoute>
               }
             />
 

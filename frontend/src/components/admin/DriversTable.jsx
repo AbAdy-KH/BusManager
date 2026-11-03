@@ -1,6 +1,5 @@
 import { User, Award, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
-import EmptyState from '../common/EmptyState';
 
 export default function DriversTable({ drivers = [], searchTerm = '', onAddDriver, onEditDriver, onDeleteDriver }) {
   const { t } = useLanguage();
@@ -13,10 +12,6 @@ export default function DriversTable({ drivers = [], searchTerm = '', onAddDrive
       driver.driverId?.toLowerCase().includes(term)
     );
   });
-
-  if (filteredDrivers.length === 0) {
-    return <EmptyState icon={User} title={t.noData} />;
-  }
 
   return (
     <div className="overflow-x-auto">

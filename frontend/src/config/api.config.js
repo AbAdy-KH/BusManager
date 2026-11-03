@@ -62,4 +62,11 @@ export const API_ROUTES = {
     BY_ID: (id) => `/api/BusDriver/${id}`,
     TODAY_DRIVER: (driverId) => `/api/BusDriver/today/driver/${driverId}`,
   },
+  ROUTES: {
+    ALL: '/api/route',
+    BY_ID: (id) => `/api/route/${id}`,
+    CREATE: '/api/route',
+    UPDATE: (id) => `/api/route/${id}`,
+    DELETE: (id) => `/api/route/${id}`,
+  },
 };

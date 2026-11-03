@@ -256,3 +256,31 @@ export async function fetchTodayDriverAssignment(driverId) {
   }
 }
 
+/**
+ * Fetches all routes from GET /api/route.
+ * @returns {Promise<Array<{ id: string, name: string, code: string }>>}
+ */
+export async function fetchRoutes() {
+  return fetchWithAuth(API_ROUTES.ROUTES.ALL);
+}
+
+/** Fetch a single route by ID */
+export async function fetchRouteById(id) {
+  return fetchWithAuth(API_ROUTES.ROUTES.BY_ID(id));
+}
+
+/** Create a new route */
+export async function createRoute(routeData) {
+  return fetchWithAuth(API_ROUTES.ROUTES.CREATE, { method: 'POST', body: routeData });
+}
+
+/** Update an existing route */
+export async function updateRoute(id, routeData) {
+  return fetchWithAuth(API_ROUTES.ROUTES.UPDATE(id), { method: 'PUT', body: routeData });
+}
+
+/** Delete a route */
+export async function deleteRoute(id) {
+  return fetchWithAuth(API_ROUTES.ROUTES.DELETE(id), { method: 'DELETE' });
+}
+

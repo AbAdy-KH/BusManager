@@ -56,14 +56,6 @@ export default function AdminTabs({
               className="w-full pl-8 rtl:pl-3 rtl:pr-8 pr-3 py-1.5 bg-white border border-stone-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-left rtl:text-right shadow-xs"
             />
           </div>
-
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{t.add}</span>
-          </button>
         </div>
       )}
     </div>
