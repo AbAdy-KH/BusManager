@@ -54,5 +54,21 @@ namespace BusManager.Api.Controllers
             await _tripService.DeleteAsync(id);
             return NoContent();
         }
+
+        [HttpPost("{id}/start")]
+        public async Task<ActionResult<Trip>> StartTrip(string id)
+        {
+            var trip = await _tripService.StartTripAsync(id);
+            if (trip == null) return NotFound(new { message = "Trip not found." });
+            return Ok(trip);
+        }
+
+        [HttpPost("{id}/end")]
+        public async Task<ActionResult<Trip>> EndTrip(string id)
+        {
+            var trip = await _tripService.EndTripAsync(id);
+            if (trip == null) return NotFound(new { message = "Trip not found." });
+            return Ok(trip);
+        }
     }
 }

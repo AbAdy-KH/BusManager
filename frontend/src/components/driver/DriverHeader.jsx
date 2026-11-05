@@ -13,14 +13,6 @@ export default function DriverHeader() {
           </div>
           <span>{t.driverDashboard}</span>
         </h1>
-        <p className="text-xs text-slate-500 mt-1">{t.driverGpsDesc}</p>
-      </div>
-
-      <div className="flex items-center gap-2 font-mono text-xs">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold shadow-xs">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-          <span>GPS: {t.active}</span>
-        </span>
       </div>
     </div>
   );

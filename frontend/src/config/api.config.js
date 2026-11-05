@@ -48,6 +48,8 @@ export const API_ROUTES = {
     CREATE: '/api/trip',
     UPDATE: (id) => `/api/trip/${id}`,
     DELETE: (id) => `/api/trip/${id}`,
+    START: (id) => `/api/trip/${id}/start`,
+    END: (id) => `/api/trip/${id}/end`,
   },
   STOPS: {
     ALL: '/api/stop',

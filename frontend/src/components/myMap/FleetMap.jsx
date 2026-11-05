@@ -1,15 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import Map, { Marker, Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disconnected' }) {
 
-    liveBuses = [
-        { id: 'bus-101', name: 'Bus #101', longitude: 35.8520, latitude: 32.5450, heading: 45 },
-        { id: 'bus-202', name: 'Bus #202', longitude: 35.8600, latitude: 32.5500, heading: 180 },
-    ];
-
-    // 1. Convert your stops array to GeoJSON format
+    // 1. Convert stops array to GeoJSON format
     const stopsGeoJSON = useMemo(() => {
         return {
             type: 'FeatureCollection',
@@ -21,13 +16,12 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                 },
                 geometry: {
                     type: 'Point',
-                    // Coordinates in [Longitude, Latitude] order
                     coordinates: [parseFloat(stop.longitude), parseFloat(stop.latitude)],
                 },
             })),
         };
     }, [stops]);
-    
+
     return (
         <div style={{ width: '100%', height: '60vb' }}>
             <Map
@@ -47,7 +41,7 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
                         type="circle"
                         paint={{
                             'circle-radius': 8,
-                            'circle-color': '#8800ff', // Solid blue dot
+                            'circle-color': '#8800ff',
                             'circle-stroke-width': 2,
                             'circle-stroke-color': '#FFFFFF',
                         }}
@@ -56,9 +50,9 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
 
                 {liveBuses.map((bus) => (
                     <Marker
-                        key={bus.id}
-                        longitude={bus.longitude}
-                        latitude={bus.latitude}
+                        key={bus.busId}
+                        longitude={Number(bus.longitude)}
+                        latitude={Number(bus.latitude)}
                         anchor="center"
                     >
                         {/* Custom Bus Marker UI */}

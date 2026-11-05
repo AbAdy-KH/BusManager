@@ -169,7 +169,7 @@ export async function getValidAccessToken(bufferSeconds = 30) {
  * Calls backend POST /api/auth/login with LoginRequestDto.
  * @param {{ email: string, password: string }} credentials
  * @returns {Promise<{ accessToken: string, refreshToken: string }>}
- */
+*/
 export async function loginApi({ email, password }) {
   const baseUrl = getApiBaseUrl();
   const response = await fetch(`${baseUrl}${API_ROUTES.AUTH.LOGIN}`, {

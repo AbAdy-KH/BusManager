@@ -34,12 +34,18 @@ export async function startAdminTracking({ onLocationReceived, onStatusChange })
   // Bind location handler
   if (onLocationReceived) {
     connection.on('ReceiveBusLocation', (loc) => {
-      onLocationReceived({
-        busId: Number(loc.busId),
-        latitude: Number(loc.latitude),
-        longitude: Number(loc.longitude),
-        timestamp: new Date().toLocaleTimeString(),
-      });
+      const busId = Number(loc?.busId ?? loc?.BusId);
+      const latitude = Number(loc?.latitude ?? loc?.Latitude);
+      const longitude = Number(loc?.longitude ?? loc?.Longitude);
+
+      if (!isNaN(latitude) && !isNaN(longitude) && (latitude !== 0 || longitude !== 0)) {
+        onLocationReceived({
+          busId,
+          latitude,
+          longitude,
+          timestamp: new Date().toLocaleTimeString(),
+        });
+      }
     });
   }
 

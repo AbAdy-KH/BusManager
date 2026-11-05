@@ -33,7 +33,6 @@ async function fetchWithAuth(endpoint, options = {}, isRetry = false) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  console.log(options);
 
   const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
@@ -177,6 +176,26 @@ export async function updateTrip(id, tripData) {
 export async function deleteTrip(id) {
   return fetchWithAuth(API_ROUTES.TRIPS.DELETE(id), {
     method: 'DELETE',
+  });
+}
+
+/**
+ * Starts a trip by POST to /api/trip/{id}/start.
+ * @param {string} id
+ */
+export async function startTrip(id) {
+  return fetchWithAuth(API_ROUTES.TRIPS.START(id), {
+    method: 'POST',
+  });
+}
+
+/**
+ * Ends/completes a trip by POST to /api/trip/{id}/end.
+ * @param {string} id
+ */
+export async function endTrip(id) {
+  return fetchWithAuth(API_ROUTES.TRIPS.END(id), {
+    method: 'POST',
   });
 }
 

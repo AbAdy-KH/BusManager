@@ -158,8 +158,6 @@ export default function TripModal({
 
     const startObj = new Date(startTime);
     const arrivalObj = new Date(arrivalTime);
-    console.log(startObj);
-    console.log(arrivalObj);
 
     if (arrivalObj <= startObj) {
       setError('Scheduled arrival time must be after scheduled start time.');
@@ -177,8 +175,6 @@ export default function TripModal({
       direction: Number(direction),
       notes: notes.trim() || null,
     };
-
-    console.log(payload);
     
     try {
       if (isEdit) {

@@ -44,7 +44,9 @@ namespace BusManager.Application.Services.Implementations
                         trip.Status.ToString(),
                         trip.ScheduledStartTime,
                         trip.ScheduledArrivalTime,
-                        trip.Direction.ToString()
+                        trip.Direction.ToString(),
+                        trip.ActualStartTime,
+                        trip.ActualArrivalTime
                     )
                 );
             }
@@ -101,6 +103,36 @@ namespace BusManager.Application.Services.Implementations
             if (trip == null) return;
             _unitOfWork.Trip.Delete(trip);
             _unitOfWork.Save();
+        }
+
+        public async Task<Trip?> StartTripAsync(string id)
+        {
+            var trip = await _unitOfWork.Trip.Get(t => t.Id == id);
+            if (trip == null) return null;
+
+            trip.Status = TripStatus.InProgress;
+            trip.ActualStartTime = DateTime.UtcNow;
+
+            _unitOfWork.Trip.Update(trip);
+            _unitOfWork.Save();
+            return trip;
+        }
+
+        public async Task<Trip?> EndTripAsync(string id)
+        {
+            var trip = await _unitOfWork.Trip.Get(t => t.Id == id);
+            if (trip == null) return null;
+
+            trip.Status = TripStatus.Completed;
+            trip.ActualArrivalTime = DateTime.UtcNow;
+            if (trip.ActualStartTime == null)
+            {
+                trip.ActualStartTime = trip.ScheduledStartTime;
+            }
+
+            _unitOfWork.Trip.Update(trip);
+            _unitOfWork.Save();
+            return trip;
         }
     }
 }

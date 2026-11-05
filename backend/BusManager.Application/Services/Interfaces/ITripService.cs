@@ -10,5 +10,7 @@ namespace BusManager.Application.Services.Interfaces
         Task<Trip> CreateAsync(TripDto dto);
         Task<Trip> UpdateAsync(string id, TripDto dto);
         Task DeleteAsync(string id);
+        Task<Trip?> StartTripAsync(string id);
+        Task<Trip?> EndTripAsync(string id);
     }
 }

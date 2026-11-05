@@ -8,14 +8,14 @@ export function useDriverLocationSender() {
   const isDriver = user?.roles?.includes('Driver');
 
   const [busId, setBusId] = useState(1);
-  const [coordinates, setCoordinates] = useState({ lat: 32.5556, lng: 35.8500 });
+  const [coordinates, setCoordinates] = useState(null);
   const [lastSentTime, setLastSentTime] = useState(null);
   const [isSending] = useState(() => isDriver);
-  const [status, setStatus] = useState(() => (isDriver ? 'transmitting' : 'idle'));
+  const [status, setStatus] = useState(() => (isDriver ? 'connecting' : 'idle'));
   const [error, setError] = useState(null);
 
-  const coordsRef = useRef(coordinates);
   const busIdRef = useRef(busId);
+  const lastTransmittedRef = useRef({ lat: null, lng: null, time: 0 });
 
   // Auto-fetch today's assigned bus for this driver
   useEffect(() => {
@@ -30,11 +30,9 @@ export function useDriverLocationSender() {
     }
   }, [user?.id, isDriver]);
 
-  // Synchronize ref values safely inside effect
   useEffect(() => {
-    coordsRef.current = coordinates;
     busIdRef.current = busId;
-  }, [coordinates, busId]);
+  }, [busId]);
 
   useEffect(() => {
     if (!isDriver) {
@@ -43,8 +41,8 @@ export function useDriverLocationSender() {
     }
 
     let isMounted = true;
+    let watchId = null;
 
-    // Function to transmit current position
     async function transmitPosition(lat, lng) {
       try {
         await sendDriverLocation({
@@ -66,50 +64,68 @@ export function useDriverLocationSender() {
       }
     }
 
-    // Function to get current geolocation or fallback with simulated slight jitter
-    function queryAndSendLocation() {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const newLat = pos.coords.latitude;
-            const newLng = pos.coords.longitude;
-            if (isMounted) {
-              setCoordinates({ lat: newLat, lng: newLng });
-            }
-            transmitPosition(newLat, newLng);
-          },
-          (err) => {
-            const jitterLat = (Math.random() - 0.5) * 0.0008;
-            const jitterLng = (Math.random() - 0.5) * 0.0008;
-            const fallbackLat = Number((coordsRef.current.lat + jitterLat).toFixed(6));
-            const fallbackLng = Number((coordsRef.current.lng + jitterLng).toFixed(6));
+    function handlePosition(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const accuracy = pos.coords.accuracy;
 
-            if (isMounted) {
-              setCoordinates({ lat: fallbackLat, lng: fallbackLng });
-              if (err.code === 1) {
-                setError('GPS permission denied: using route simulation fallback.');
-              }
-            }
-            transmitPosition(fallbackLat, fallbackLng);
-          },
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      } else {
-        const fallbackLat = coordsRef.current.lat;
-        const fallbackLng = coordsRef.current.lng;
-        transmitPosition(fallbackLat, fallbackLng);
+      if (isMounted) {
+        setCoordinates({ lat, lng, accuracy });
+      }
+
+      const now = Date.now();
+      const last = lastTransmittedRef.current;
+      const timeDiff = now - last.time;
+
+      // Transmit if:
+      // 1. First time ever
+      // 2. Or moved significantly (> ~3 meters) and at least 5s elapsed
+      // 3. Or at least 15s elapsed (periodic heartbeat)
+      const movedSignificantly =
+        last.lat === null ||
+        Math.abs(lat - last.lat) > 0.00003 ||
+        Math.abs(lng - last.lng) > 0.00003;
+
+      if (last.lat === null || (timeDiff >= 5000 && movedSignificantly) || timeDiff >= 15000) {
+        lastTransmittedRef.current = { lat, lng, time: now };
+        transmitPosition(lat, lng);
       }
     }
 
-    // Initial send
-    queryAndSendLocation();
+    function handleError(err) {
+      console.warn('Geolocation error:', err.message, 'Code:', err.code);
+      if (isMounted) {
+        let msg = 'Failed to get location';
+        if (err.code === 1) msg = 'Location permission denied by user or browser.';
+        else if (err.code === 2) msg = 'Location unavailable. Ensure GPS is enabled.';
+        else if (err.code === 3) msg = 'Location request timed out. Retrying...';
+        setError(msg);
+        setStatus('error');
+      }
+    }
 
-    // Transmit every 10 seconds
-    const interval = setInterval(queryAndSendLocation, 10000);
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser.');
+      setStatus('error');
+      return;
+    }
+
+    // Start watching real position with high accuracy
+    watchId = navigator.geolocation.watchPosition(
+      handlePosition,
+      handleError,
+      {
+        enableHighAccuracy: true,
+        timeout: 30000,
+        maximumAge: 5000,
+      }
+    );
 
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
       closeDriverConnection();
     };
   }, [isDriver]);

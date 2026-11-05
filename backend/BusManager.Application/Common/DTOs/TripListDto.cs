@@ -13,6 +13,8 @@ namespace BusManager.Application.Common.DTOs
         string Status,
         DateTime ScheduledStartTime,
         DateTime ScheduledArrivalTime,
-        string Direction
+        string Direction,
+        DateTime? ActualStartTime = null,
+        DateTime? ActualArrivalTime = null
     );
 }
