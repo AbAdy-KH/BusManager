@@ -71,4 +71,12 @@ export const API_ROUTES = {
     UPDATE: (id) => `/api/route/${id}`,
     DELETE: (id) => `/api/route/${id}`,
   },
+  ROUTE_STOPS: {
+    ALL: '/api/RouteStop',
+    BY_ROUTE: (routeId) => `/api/RouteStop/route/${routeId}`,
+    BY_ID: (routeId, stopPointId) => `/api/RouteStop/${routeId}/${stopPointId}`,
+    CREATE: '/api/RouteStop',
+    UPDATE: (routeId, stopPointId) => `/api/RouteStop/${routeId}/${stopPointId}`,
+    DELETE: (routeId, stopPointId) => `/api/RouteStop/${routeId}/${stopPointId}`,
+  },
 };

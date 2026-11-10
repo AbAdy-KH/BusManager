@@ -303,3 +303,70 @@ export async function deleteRoute(id) {
   return fetchWithAuth(API_ROUTES.ROUTES.DELETE(id), { method: 'DELETE' });
 }
 
+/**
+ * Fetches all route stop assignments, optionally filtered by routeId.
+ * Calls GET /api/RouteStop(?routeId=...).
+ * @param {string|null} routeId
+ * @returns {Promise<Array<{ routeId: string, routeName: string, routeCode: string, stopPointId: string, stopPointName: string, stopPointAddress: string|null, stopPointLatitude: number, stopPointLongitude: number, sequenceOrder: number, estimatedMinutesFromStart: number|null }>>}
+ */
+export async function fetchRouteStops(routeId = null) {
+  const query = routeId ? `?routeId=${encodeURIComponent(routeId)}` : '';
+  return fetchWithAuth(`${API_ROUTES.ROUTE_STOPS.ALL}${query}`);
+}
+
+/**
+ * Fetches all stops assigned to a specific route, ordered by sequence.
+ * Calls GET /api/RouteStop/route/{routeId}.
+ * @param {string} routeId
+ */
+export async function fetchStopsByRouteId(routeId) {
+  return fetchWithAuth(API_ROUTES.ROUTE_STOPS.BY_ROUTE(routeId));
+}
+
+/**
+ * Fetches a single route-stop assignment.
+ * Calls GET /api/RouteStop/{routeId}/{stopPointId}.
+ */
+export async function fetchRouteStopById(routeId, stopPointId) {
+  return fetchWithAuth(API_ROUTES.ROUTE_STOPS.BY_ID(routeId, stopPointId));
+}
+
+/**
+ * Adds a stop point to a route.
+ * Calls POST /api/RouteStop.
+ * @param {{ routeId: string, stopPointId: string, sequenceOrder: number, estimatedMinutesFromStart?: number|null }} routeStopData
+ */
+export async function addStopToRoute(routeStopData) {
+  return fetchWithAuth(API_ROUTES.ROUTE_STOPS.CREATE, {
+    method: 'POST',
+    body: routeStopData,
+  });
+}
+
+/**
+ * Updates sequence order or estimated minutes for a route stop.
+ * Calls PUT /api/RouteStop/{routeId}/{stopPointId}.
+ * @param {string} routeId
+ * @param {string} stopPointId
+ * @param {{ routeId: string, stopPointId: string, sequenceOrder: number, estimatedMinutesFromStart?: number|null }} routeStopData
+ */
+export async function updateRouteStop(routeId, stopPointId, routeStopData) {
+  return fetchWithAuth(API_ROUTES.ROUTE_STOPS.UPDATE(routeId, stopPointId), {
+    method: 'PUT',
+    body: routeStopData,
+  });
+}
+
+/**
+ * Removes a stop point from a route.
+ * Calls DELETE /api/RouteStop/{routeId}/{stopPointId}.
+ * @param {string} routeId
+ * @param {string} stopPointId
+ */
+export async function removeStopFromRoute(routeId, stopPointId) {
+  return fetchWithAuth(API_ROUTES.ROUTE_STOPS.DELETE(routeId, stopPointId), {
+    method: 'DELETE',
+  });
+}
+
+

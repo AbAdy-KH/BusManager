@@ -7,14 +7,12 @@ import {
   fetchBusDriverAssignments,
   fetchRoutes,
 } from '../../services/adminService';
+import Modal from '../common/Modal';
 import {
-  X,
   Route as RouteIcon,
   Clock,
   Compass,
   FileText,
-  CheckCircle2,
-  AlertCircle,
   Bus,
   User,
 } from 'lucide-react';
@@ -193,37 +191,16 @@ export default function TripModal({
   };
  
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl border border-stone-200/90 max-w-lg w-full overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="bg-stone-50 px-6 py-4 border-b border-stone-200/80 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
-              <RouteIcon className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-800">
-                {isEdit ? t.tripModalTitleEdit : t.tripModalTitleAdd}
-              </h2>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-          {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEdit ? t.tripModalTitleEdit : t.tripModalTitleAdd}
+      icon={RouteIcon}
+      error={error}
+      isSubmitting={submitting}
+      onSubmit={handleSubmit}
+      submitText={t.saveTrip}
+    >
 
           {/* Bus Driver Selection */}
           <div>
@@ -360,30 +337,6 @@ export default function TripModal({
             />
           </div>
 
-          {/* Buttons */}
-          <div className="pt-3 flex items-center justify-end gap-2 border-t border-stone-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 bg-stone-100 hover:bg-stone-200 rounded-xl transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
-            >
-              {submitting ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-4 h-4" />
-              )}
-              <span>{t.saveTrip}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

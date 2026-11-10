@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import RoutesTable from '../RoutesTable';
 import RouteModal from '../RouteModal';
 import { deleteRoute, fetchRoutes } from '../../../services/adminService';
 import { useLanguage } from '../../../context/useLanguage';
+import { useCrudTab } from '../../../hooks/useCrudTab';
 
 export default function RoutesTab({
   routes = [],
@@ -12,56 +12,37 @@ export default function RoutesTab({
   onError,
 }) {
   const { t } = useLanguage();
-  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
-  const [selectedRouteToEdit, setSelectedRouteToEdit] = useState(null);
-
-  const handleOpenAddRoute = () => {
-    setSelectedRouteToEdit(null);
-    setIsRouteModalOpen(true);
-  };
-
-  const handleOpenEditRoute = (route) => {
-    setSelectedRouteToEdit(route);
-    setIsRouteModalOpen(true);
-  };
-
-  const handleDeleteRoute = async (routeId) => {
-    if (window.confirm(t.confirmDeleteRoute)) {
-      try {
-        await deleteRoute(routeId);
-        const updated = await fetchRoutes();
-        setRoutes(updated || []);
-      } catch (err) {
-        onError?.(err.message);
-      }
-    }
-  };
-
-  const handleRouteSaved = async () => {
-    try {
-      const updated = await fetchRoutes();
-      setRoutes(updated || []);
-      setIsRouteModalOpen(false);
-    } catch (err) {
-      onError?.(err.message);
-    }
-  };
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    selectedItemToEdit,
+    handleOpenAdd,
+    handleOpenEdit,
+    handleDelete,
+    handleSaved,
+  } = useCrudTab({
+    fetchItems: fetchRoutes,
+    deleteItem: deleteRoute,
+    setItems: setRoutes,
+    confirmDeleteMessage: t.confirmDeleteRoute,
+    onError,
+  });
 
   return (
     <>
       <RoutesTable
         routes={routes}
         searchTerm={searchTerm}
-        onAddRoute={isAdmin ? handleOpenAddRoute : null}
-        onEditRoute={isAdmin ? handleOpenEditRoute : null}
-        onDeleteRoute={isAdmin ? handleDeleteRoute : null}
+        onAddRoute={isAdmin ? handleOpenAdd : null}
+        onEditRoute={isAdmin ? handleOpenEdit : null}
+        onDeleteRoute={isAdmin ? handleDelete : null}
       />
 
       <RouteModal
-        isOpen={isRouteModalOpen}
-        onClose={() => setIsRouteModalOpen(false)}
-        onSuccess={handleRouteSaved}
-        route={selectedRouteToEdit}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleSaved}
+        route={selectedItemToEdit}
       />
     </>
   );

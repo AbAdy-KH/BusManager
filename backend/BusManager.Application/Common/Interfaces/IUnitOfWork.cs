@@ -10,6 +10,7 @@ namespace BusManager.Application.Common.Interfaces
         ITripRepository Trip { get; }
         IBusDriverRepository BusDriver { get; }
         IRouteRepository Route { get; }
+        IRouteStopRepository RouteStop { get; }
         int Save();
 
     }

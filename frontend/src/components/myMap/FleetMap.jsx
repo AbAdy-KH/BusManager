@@ -4,23 +4,28 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disconnected' }) {
 
-    // 1. Convert stops array to GeoJSON format
-    const stopsGeoJSON = useMemo(() => {
+
+    function mapIntoGeoJson(isDropPoint) {
         return {
             type: 'FeatureCollection',
-            features: stops.map((stop, index) => ({
-                type: 'Feature',
-                properties: {
-                    id: stop.id || index,
-                    name: stop.name,
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: [parseFloat(stop.longitude), parseFloat(stop.latitude)],
-                },
-            })),
+            features: stops
+                .filter(stop => stop.isDropPoint === isDropPoint)
+                .map((stop, index) => ({
+                    type: 'Feature',
+                    properties: {
+                        id: stop.id || index,
+                        name: stop.name,
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [parseFloat(stop.longitude), parseFloat(stop.latitude)],
+                    },
+                })),
         };
-    }, [stops]);
+    }
+
+    const dropPointsGeoJSON = useMemo(() => mapIntoGeoJson(true), [stops]);
+    const pickPointsGeoJSON = useMemo(() => mapIntoGeoJson(false), [stops]);
 
     return (
         <div style={{ width: '100%', height: '60vb' }}>
@@ -35,19 +40,33 @@ export default function FleetMap({ stops = [], liveBuses = [], hubStatus = 'disc
             >
                 <NavigationControl position="top-right" />
 
-                <Source id="bus-stops" type="geojson" data={stopsGeoJSON}>
-                    <Layer
-                        id="stops-layer"
-                        type="circle"
-                        paint={{
-                            'circle-radius': 8,
-                            'circle-color': '#8800ff',
-                            'circle-stroke-width': 2,
-                            'circle-stroke-color': '#FFFFFF',
-                        }}
-                    />
-                </Source>
+            {/* Drop Points (Purple) */}
+            <Source id="drop-stops-source" type="geojson" data={dropPointsGeoJSON}>
+                <Layer
+                    id="drop-stops-layer"
+                    type="circle"
+                    paint={{
+                        'circle-radius': 8,
+                        'circle-color': '#8800ff',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#FFFFFF',
+                    }}
+                />
+            </Source>
 
+            {/* Pick Points (Red) */}
+            <Source id="pick-stops-source" type="geojson" data={pickPointsGeoJSON}>
+                <Layer
+                    id="pick-stops-layer"
+                    type="circle"
+                    paint={{
+                        'circle-radius': 8,
+                        'circle-color': '#ff2600',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#FFFFFF',
+                    }}
+                />
+            </Source>
                 {liveBuses.map((bus) => (
                     <Marker
                         key={bus.busId}

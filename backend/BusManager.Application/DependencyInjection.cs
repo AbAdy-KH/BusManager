@@ -20,6 +20,7 @@ namespace BusManager.Application
             services.AddScoped<IStopPointService, StopPointService>();
             services.AddScoped<ITripService, TripService>();
             services.AddScoped<IRouteService, RouteService>();
+            services.AddScoped<IRouteStopService, RouteStopService>();
 
             return services;
             

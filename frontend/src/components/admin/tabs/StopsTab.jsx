@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import StopsTable from '../StopsTable';
 import StopModal from '../StopModal';
 import { deleteStop, fetchStops } from '../../../services/adminService';
 import { useLanguage } from '../../../context/useLanguage';
+import { useCrudTab } from '../../../hooks/useCrudTab';
 
 export default function StopsTab({
   stops = [],
@@ -12,56 +12,37 @@ export default function StopsTab({
   onError,
 }) {
   const { t } = useLanguage();
-  const [isStopModalOpen, setIsStopModalOpen] = useState(false);
-  const [selectedStopToEdit, setSelectedStopToEdit] = useState(null);
-
-  const handleOpenAddStop = () => {
-    setSelectedStopToEdit(null);
-    setIsStopModalOpen(true);
-  };
-
-  const handleOpenEditStop = (stop) => {
-    setSelectedStopToEdit(stop);
-    setIsStopModalOpen(true);
-  };
-
-  const handleDeleteStop = async (stopId) => {
-    if (window.confirm(t.confirmDeleteStop)) {
-      try {
-        await deleteStop(stopId);
-        const updated = await fetchStops();
-        setStops(updated || []);
-      } catch (err) {
-        onError?.(err.message);
-      }
-    }
-  };
-
-  const handleStopSaved = async () => {
-    try {
-      const updated = await fetchStops();
-      setStops(updated || []);
-      setIsStopModalOpen(false);
-    } catch (err) {
-      onError?.(err.message);
-    }
-  };
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    selectedItemToEdit,
+    handleOpenAdd,
+    handleOpenEdit,
+    handleDelete,
+    handleSaved,
+  } = useCrudTab({
+    fetchItems: fetchStops,
+    deleteItem: deleteStop,
+    setItems: setStops,
+    confirmDeleteMessage: t.confirmDeleteStop,
+    onError,
+  });
 
   return (
     <>
       <StopsTable
         stops={stops}
         searchTerm={searchTerm}
-        onAddStop={isAdmin ? handleOpenAddStop : null}
-        onEditStop={isAdmin ? handleOpenEditStop : null}
-        onDeleteStop={isAdmin ? handleDeleteStop : null}
+        onAddStop={isAdmin ? handleOpenAdd : null}
+        onEditStop={isAdmin ? handleOpenEdit : null}
+        onDeleteStop={isAdmin ? handleDelete : null}
       />
 
       <StopModal
-        isOpen={isStopModalOpen}
-        onClose={() => setIsStopModalOpen(false)}
-        onSuccess={handleStopSaved}
-        stop={selectedStopToEdit}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleSaved}
+        stop={selectedItemToEdit}
       />
     </>
   );

@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import TripsTable from '../TripsTable';
 import TripModal from '../TripModal';
 import { fetchTrips } from '../../../services/adminService';
+import { useCrudTab } from '../../../hooks/useCrudTab';
 
 export default function TripsTab({
   trips = [],
@@ -12,34 +12,24 @@ export default function TripsTab({
   isAdmin = false,
   onError,
 }) {
-  const [isTripModalOpen, setIsTripModalOpen] = useState(false);
-  const [selectedTripToEdit, setSelectedTripToEdit] = useState(null);
+  const {
+    isModalOpen,
+    setIsModalOpen,
+    selectedItemToEdit,
+    handleOpenAdd,
+    handleOpenEdit,
+    handleSaved,
+  } = useCrudTab({
+    fetchItems: () => fetchTrips(tripDate),
+    setItems: setTrips,
+    onError,
+  });
 
   const handleTripDateChange = async (newDate) => {
     setTripDate?.(newDate);
     try {
       const data = await fetchTrips(newDate);
       setTrips(data || []);
-    } catch (err) {
-      onError?.(err.message);
-    }
-  };
-
-  const handleOpenAddTrip = () => {
-    setSelectedTripToEdit(null);
-    setIsTripModalOpen(true);
-  };
-
-  const handleOpenEditTrip = (trip) => {
-    setSelectedTripToEdit(trip);
-    setIsTripModalOpen(true);
-  };
-
-  const handleTripSaved = async () => {
-    try {
-      const data = await fetchTrips(tripDate);
-      setTrips(data || []);
-      setIsTripModalOpen(false);
     } catch (err) {
       onError?.(err.message);
     }
@@ -52,16 +42,16 @@ export default function TripsTab({
         searchTerm={searchTerm}
         selectedDate={tripDate}
         onDateChange={handleTripDateChange}
-        onAddTrip={isAdmin ? handleOpenAddTrip : null}
-        onEditTrip={isAdmin ? handleOpenEditTrip : null}
-        onTripDeleted={handleTripSaved}
+        onAddTrip={isAdmin ? handleOpenAdd : null}
+        onEditTrip={isAdmin ? handleOpenEdit : null}
+        onTripDeleted={handleSaved}
       />
 
       <TripModal
-        isOpen={isTripModalOpen}
-        onClose={() => setIsTripModalOpen(false)}
-        onSuccess={handleTripSaved}
-        trip={selectedTripToEdit}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleSaved}
+        trip={selectedItemToEdit}
         defaultDate={tripDate || new Date().toISOString().split('T')[0]}
       />
     </>

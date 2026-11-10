@@ -1,122 +1,45 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../context/useAuth';
-import { useLanguage } from '../context/useLanguage';
-import {
-  fetchBuses,
-  fetchDrivers,
-  fetchTrips,
-  fetchStops,
-  fetchRoutes,
-  getTodayDateString,
-} from '../services/adminService';
-import { startAdminTracking } from '../services/trackingHubService';
+import { useAdminPage } from '../hooks/useAdminPage';
 import FleetMap from '../components/myMap/FleetMap';
 import BusesTab from '../components/admin/tabs/BusesTab';
 import DriversTab from '../components/admin/tabs/DriversTab';
 import TripsTab from '../components/admin/tabs/TripsTab';
 import StopsTab from '../components/admin/tabs/StopsTab';
 import RoutesTab from '../components/admin/tabs/RoutesTab';
+import RouteStopsTab from '../components/admin/tabs/RouteStopsTab';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminTabs from '../components/admin/AdminTabs';
-import { Map, Bus, Users, Route as RouteIcon, MapPin, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function AdminPage() {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const isAdmin = user?.roles?.includes('Admin');
-
-  const [activeTab, setActiveTab] = useState('map');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [tripDate, setTripDate] = useState(getTodayDateString());
-
-  const [buses, setBuses] = useState([]);
-  const [drivers, setDrivers] = useState([]);
-  const [trips, setTrips] = useState([]);
-  const [stops, setStops] = useState([]);
-  const [routes, setRoutes] = useState([]);
-
-  const [liveBuses, setLiveBuses] = useState({});
-  const [hubStatus, setHubStatus] = useState('disconnected');
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const loadAllData = useCallback(async (selectedTripDate = tripDate) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [busesData, driversData, tripsData, stopsData, routesData] = await Promise.allSettled([
-        fetchBuses(),
-        fetchDrivers(),
-        fetchTrips(selectedTripDate),
-        fetchStops(),
-        fetchRoutes(),
-      ]);
-
-      if (busesData.status === 'fulfilled') setBuses(busesData.value || []);
-      if (driversData.status === 'fulfilled') setDrivers(driversData.value || []);
-      if (tripsData.status === 'fulfilled') setTrips(tripsData.value || []);
-      if (stopsData.status === 'fulfilled') setStops(stopsData.value || []);
-      if (routesData.status === 'fulfilled') setRoutes(routesData.value || []);
-
-      const failed = [busesData, driversData, tripsData, stopsData, routesData].filter(
-        (r) => r.status === 'rejected'
-      );
-
-      if (failed.length === 5) {
-        throw new Error(failed[0].reason?.message || 'Could not connect to backend services.');
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to load fleet data.');
-    } finally {
-      setLoading(false);
-    }
-  }, [tripDate]);
-
-  useEffect(() => {
-    let ignore = false;
-    loadAllData(getTodayDateString());
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    let cleanupFn = null;
-
-    startAdminTracking({
-      onLocationReceived: (loc) => {
-        setLiveBuses((prev) => ({
-          ...prev,
-          [loc.busId]: loc,
-        }));
-      },
-      onStatusChange: setHubStatus,
-    })
-      .then((res) => {
-        cleanupFn = res.stop;
-      })
-      .catch((err) => {
-        console.warn('Admin SignalR tracking failed to initialize:', err);
-      });
-
-    return () => {
-      if (cleanupFn) cleanupFn();
-    };
-  }, [isAdmin]);
-
-  const liveBusesList = Object.values(liveBuses);
-
-  const tabs = [
-    { id: 'map', label: t.fleetMap, icon: Map, count: stops.length, badge: isAdmin ? `${liveBusesList.length} ${t.active}` : null },
-    { id: 'trips', label: t.trips, icon: RouteIcon, count: trips.length },
-    { id: 'routes', label: t.routes, icon: RouteIcon, count: routes.length },
-    { id: 'buses', label: t.buses, icon: Bus, count: buses.length },
-    { id: 'drivers', label: t.drivers, icon: Users, count: drivers.length },
-    { id: 'stops', label: t.stops, icon: MapPin, count: stops.length },
-  ];
+  const {
+    isAdmin,
+    t,
+    activeTab,
+    handleTabChange,
+    searchTerm,
+    setSearchTerm,
+    tripDate,
+    setTripDate,
+    buses,
+    setBuses,
+    drivers,
+    setDrivers,
+    trips,
+    setTrips,
+    stops,
+    setStops,
+    routes,
+    setRoutes,
+    routeStops,
+    setRouteStops,
+    liveBusesList,
+    hubStatus,
+    loading,
+    error,
+    setError,
+    loadAllData,
+    tabs,
+  } = useAdminPage();
 
   return (
     <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
@@ -134,10 +57,7 @@ export default function AdminPage() {
         <AdminTabs
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={(tabId) => {
-            setActiveTab(tabId);
-            setSearchTerm('');
-          }}
+          onTabChange={handleTabChange}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
         />
@@ -208,6 +128,17 @@ export default function AdminPage() {
               <RoutesTab
                 routes={routes}
                 setRoutes={setRoutes}
+                searchTerm={searchTerm}
+                isAdmin={isAdmin}
+                onError={setError}
+              />
+            )}
+            {activeTab === 'routeStops' && (
+              <RouteStopsTab
+                routeStops={routeStops}
+                setRouteStops={setRouteStops}
+                routes={routes}
+                stops={stops}
                 searchTerm={searchTerm}
                 isAdmin={isAdmin}
                 onError={setError}

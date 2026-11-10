@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IStopPointRepository, StopPointRepository>();
         services.AddScoped<IBusDriverRepository, BusDriverRepository>();
         services.AddScoped<IRouteRepository, RouteRepository>();
+        services.AddScoped<IRouteStopRepository, RouteStopRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
