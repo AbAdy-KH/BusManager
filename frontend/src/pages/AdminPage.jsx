@@ -128,6 +128,7 @@ export default function AdminPage() {
               <RoutesTab
                 routes={routes}
                 setRoutes={setRoutes}
+                routeStops={routeStops}
                 searchTerm={searchTerm}
                 isAdmin={isAdmin}
                 onError={setError}

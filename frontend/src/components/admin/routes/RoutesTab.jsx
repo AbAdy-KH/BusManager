@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import RoutesTable from './RoutesTable';
 import RouteModal from './RouteModal';
+import RouteMapModal from './RouteMapModal';
 import { deleteRoute, fetchRoutes } from '../../../services/routeService';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
@@ -7,11 +9,14 @@ import { useCrudTab } from '../../../hooks/useCrudTab';
 export default function RoutesTab({
   routes = [],
   setRoutes,
+  routeStops = [],
   searchTerm = '',
   isAdmin = false,
   onError,
 }) {
   const { t } = useLanguage();
+  const [selectedRouteForMap, setSelectedRouteForMap] = useState(null);
+
   const {
     isModalOpen,
     setIsModalOpen,
@@ -32,7 +37,9 @@ export default function RoutesTab({
     <>
       <RoutesTable
         routes={routes}
+        routeStops={routeStops}
         searchTerm={searchTerm}
+        onViewRouteMap={setSelectedRouteForMap}
         onAddRoute={isAdmin ? handleOpenAdd : null}
         onEditRoute={isAdmin ? handleOpenEdit : null}
         onDeleteRoute={isAdmin ? handleDelete : null}
@@ -43,6 +50,13 @@ export default function RoutesTab({
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleSaved}
         route={selectedItemToEdit}
+      />
+
+      <RouteMapModal
+        isOpen={!!selectedRouteForMap}
+        onClose={() => setSelectedRouteForMap(null)}
+        route={selectedRouteForMap}
+        routeStops={routeStops}
       />
     </>
   );
