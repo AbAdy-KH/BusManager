@@ -1,11 +1,11 @@
 import { useAdminPage } from '../hooks/useAdminPage';
 import FleetMap from '../components/myMap/FleetMap';
-import BusesTab from '../components/admin/tabs/BusesTab';
-import DriversTab from '../components/admin/tabs/DriversTab';
-import TripsTab from '../components/admin/tabs/TripsTab';
-import StopsTab from '../components/admin/tabs/StopsTab';
-import RoutesTab from '../components/admin/tabs/RoutesTab';
-import RouteStopsTab from '../components/admin/tabs/RouteStopsTab';
+import BusesTab from '../components/admin/buses/BusesTab';
+import DriversTab from '../components/admin/drivers/DriversTab';
+import TripsTab from '../components/admin/trips/TripsTab';
+import StopsTab from '../components/admin/stops/StopsTab';
+import RoutesTab from '../components/admin/routes/RoutesTab';
+import RouteStopsTab from '../components/admin/routeStops/RouteStopsTab';
 import AdminHeader from '../components/admin/AdminHeader';
 import AdminTabs from '../components/admin/AdminTabs';
 import { AlertCircle } from 'lucide-react';

@@ -1,6 +1,6 @@
-import BusesTable from '../BusesTable';
-import BusModal from '../BusModal';
-import { deleteBus, fetchBuses } from '../../../services/adminService';
+import BusesTable from './BusesTable';
+import BusModal from './BusModal';
+import { deleteBus, fetchBuses } from '../../../services/busService';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 

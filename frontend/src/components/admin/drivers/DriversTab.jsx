@@ -1,6 +1,6 @@
-import DriversTable from '../DriversTable';
-import DriverModal from '../DriverModal';
-import { deleteDriver, fetchDrivers } from '../../../services/adminService';
+import DriversTable from './DriversTable';
+import DriverModal from './DriverModal';
+import { deleteDriver, fetchDrivers } from '../../../services/driverService';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 

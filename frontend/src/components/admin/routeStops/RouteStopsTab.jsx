@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import RouteStopsTable from '../RouteStopsTable';
-import RouteStopModal from '../RouteStopModal';
-import { removeStopFromRoute, fetchRouteStops } from '../../../services/adminService';
+import RouteStopsTable from './RouteStopsTable';
+import RouteStopModal from './RouteStopModal';
+import { removeStopFromRoute, fetchRouteStops } from '../../../services/routeService';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 

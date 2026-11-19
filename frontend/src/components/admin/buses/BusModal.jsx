@@ -1,104 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useLanguage } from '../../context/useLanguage';
-import { createBus, updateBus, fetchBusById } from '../../services/adminService';
-import Modal from '../common/Modal';
+import Modal from '../../common/Modal';
+import { useBusForm } from '../../../hooks/forms/useBusForm';
 import { Bus, Hash, Users } from 'lucide-react';
 
-export default function BusModal({
-  isOpen,
-  onClose,
-  onSuccess,
-  bus = null,
-}) {
-  const { t } = useLanguage();
-  const isEdit = !!bus;
-
-  const [number, setNumber] = useState('');
-  const [plateNumber, setPlateNumber] = useState('');
-  const [capacity, setCapacity] = useState('30');
-  const [isActive, setIsActive] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setError(null);
-
-    if (isEdit) {
-      if (bus.number !== undefined && bus.plateNumber !== undefined) {
-        setNumber(bus.number?.toString() || '');
-        setPlateNumber(bus.plateNumber || '');
-        setCapacity(bus.capacity?.toString() || '30');
-        setIsActive(bus.isActive !== false);
-      } else if (bus.id) {
-        fetchBusById(bus.id)
-          .then((full) => {
-            if (full) {
-              setNumber(full.number?.toString() || '');
-              setPlateNumber(full.plateNumber || '');
-              setCapacity(full.capacity?.toString() || '30');
-              setIsActive(full.isActive !== false);
-            }
-          })
-          .catch(() => {
-            setError(t.busLoadError || 'Failed to load bus data');
-          });
-      }
-    } else {
-      setNumber('');
-      setPlateNumber('');
-      setCapacity('30');
-      setIsActive(true);
-    }
-  }, [isOpen, bus, isEdit, t]);
+export default function BusModal({ isOpen, onClose, onSuccess, bus = null }) {
+  const {
+    t,
+    isEdit,
+    number,
+    setNumber,
+    plateNumber,
+    setPlateNumber,
+    capacity,
+    setCapacity,
+    isActive,
+    setIsActive,
+    submitting,
+    error,
+    handleSubmit,
+  } = useBusForm({ isOpen, bus, onSuccess, onClose });
 
   if (!isOpen) return null;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const parsedNumber = parseInt(number, 10);
-    const parsedCapacity = parseInt(capacity, 10);
-
-    if (isNaN(parsedNumber) || parsedNumber <= 0) {
-      setError(t.busNumberRequired || 'Please enter a valid bus number.');
-      return;
-    }
-
-    if (!plateNumber.trim()) {
-      setError(t.plateNumberRequired || 'Plate number is required.');
-      return;
-    }
-
-    if (isNaN(parsedCapacity) || parsedCapacity <= 0) {
-      setError(t.capacityRequired || 'Please enter a valid capacity.');
-      return;
-    }
-
-    setSubmitting(true);
-    setError(null);
-
-    const payload = {
-      number: parsedNumber,
-      plateNumber: plateNumber.trim(),
-      capacity: parsedCapacity,
-      isActive: Boolean(isActive),
-    };
-
-    try {
-      if (isEdit) {
-        await updateBus(bus.id, payload);
-      } else {
-        await createBus(payload);
-      }
-      onSuccess?.();
-      onClose();
-    } catch (err) {
-      setError(err.message || 'Failed to save bus.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <Modal
@@ -111,7 +32,6 @@ export default function BusModal({
       onSubmit={handleSubmit}
       submitText={t.saveBus || t.save}
     >
-      {/* Bus Number & Capacity */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
@@ -148,7 +68,6 @@ export default function BusModal({
         </div>
       </div>
 
-      {/* Plate Number */}
       <div>
         <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
           <Bus className="w-3.5 h-3.5 text-slate-500" />
@@ -165,7 +84,6 @@ export default function BusModal({
         />
       </div>
 
-      {/* Status Toggle */}
       <div>
         <label className="block text-xs font-semibold text-slate-700 mb-1.5">
           {t.status}

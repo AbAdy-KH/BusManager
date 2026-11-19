@@ -1,6 +1,6 @@
-import StopsTable from '../StopsTable';
-import StopModal from '../StopModal';
-import { deleteStop, fetchStops } from '../../../services/adminService';
+import StopsTable from './StopsTable';
+import StopModal from './StopModal';
+import { deleteStop, fetchStops } from '../../../services/stopService';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 

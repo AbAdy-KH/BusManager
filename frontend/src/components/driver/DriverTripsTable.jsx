@@ -1,18 +1,6 @@
-import { useState } from 'react';
 import { Route as RouteIcon, Calendar, Clock, Play, Square, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
-
-function formatTime(dateStr) {
-  if (!dateStr) return 'N/A';
-  try {
-    const d = new Date(dateStr);
-    return isNaN(d.getTime())
-      ? dateStr
-      : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return dateStr;
-  }
-}
+import { formatTime } from '../../utils/dateUtils';
 
 export default function DriverTripsTable({
   trips = [],
@@ -67,7 +55,6 @@ export default function DriverTripsTable({
 
   return (
     <div className="bg-white border border-stone-200/90 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-      {/* Header */}
       <div className="p-4 border-b border-stone-200/80 bg-stone-50/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
@@ -83,7 +70,6 @@ export default function DriverTripsTable({
         </div>
       </div>
 
-      {/* Content */}
       {!loading && trips.length === 0 && (
         <div className="p-8 text-center text-slate-500 text-xs">
           {t.noData || 'No trips assigned for today.'}
@@ -114,7 +100,6 @@ export default function DriverTripsTable({
 
                 return (
                   <tr key={tripId || trip.routeName} className="hover:bg-amber-50/30 transition-colors">
-                    {/* Route */}
                     <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
                       <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
                         <RouteIcon className="w-4 h-4" />
@@ -122,19 +107,16 @@ export default function DriverTripsTable({
                       <span>{trip.routeName || '-'}</span>
                     </td>
 
-                    {/* Direction */}
                     <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
                       <span className="px-2 py-0.5 rounded-md bg-stone-100 border border-stone-200 font-medium">
                         {formatDirection(trip.direction)}
                       </span>
                     </td>
 
-                    {/* Bus # */}
                     <td className="py-3.5 px-4 text-slate-700 font-mono font-medium">
                       #{trip.busNumber || busId || '-'}
                     </td>
 
-                    {/* Schedule */}
                     <td className="py-3.5 px-4 text-slate-700 font-mono text-[11px]">
                       <div className="flex items-center gap-1.5 font-medium text-slate-700">
                         <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -152,12 +134,10 @@ export default function DriverTripsTable({
                       )}
                     </td>
 
-                    {/* Status Badge */}
                     <td className="py-3.5 px-4">
                       {getStatusBadge(trip.status)}
                     </td>
 
-                    {/* Actions: Start & End buttons */}
                     <td className="py-3.5 px-4 text-center">
                       {isCompleted ? (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
@@ -166,7 +146,6 @@ export default function DriverTripsTable({
                         </div>
                       ) : (
                         <div className="inline-flex items-center gap-2 justify-center">
-                          {/* Start Trip Button */}
                           <button
                             type="button"
                             disabled={!isScheduled || isCurrentActionLoading}
@@ -186,7 +165,6 @@ export default function DriverTripsTable({
                             <span>{isCurrentActionLoading && isScheduled ? (t.startingTrip || 'Starting...') : (t.startTrip || 'Start Trip')}</span>
                           </button>
 
-                          {/* End / Arrive Button */}
                           <button
                             type="button"
                             disabled={!isInProgress || isCurrentActionLoading}

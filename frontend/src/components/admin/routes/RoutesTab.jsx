@@ -1,6 +1,6 @@
-import RoutesTable from '../RoutesTable';
-import RouteModal from '../RouteModal';
-import { deleteRoute, fetchRoutes } from '../../../services/adminService';
+import RoutesTable from './RoutesTable';
+import RouteModal from './RouteModal';
+import { deleteRoute, fetchRoutes } from '../../../services/routeService';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 

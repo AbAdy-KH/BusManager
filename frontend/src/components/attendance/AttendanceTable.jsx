@@ -1,46 +1,25 @@
 import { useState } from 'react';
 import { useLanguage } from '../../context/useLanguage';
-import {
-  User,
-  Bus,
-  Clock,
-  Award,
-  CheckCircle2,
-  Trash2,
-  AlertTriangle,
-  Plus
-} from 'lucide-react';
+import { useTableSearch } from '../../hooks/useTableSearch';
+import { formatTime } from '../../utils/dateUtils';
+import { User, Clock, Trash2 } from 'lucide-react';
 
-function formatAssignmentTime(isoDateStr) {
-  if (!isoDateStr) return '-';
-  try {
-    const d = new Date(isoDateStr);
-    return isNaN(d.getTime())
-      ? isoDateStr
-      : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return isoDateStr;
-  }
-}
+const ATTENDANCE_SEARCH_FIELDS = [
+  (a) => a.driverName,
+  (a) => a.licenseNumber,
+  (a) => a.busNumber,
+  (a) => a.plateNumber,
+];
 
 export default function AttendanceTable({
   assignments = [],
   searchTerm = '',
   onUnassign,
-  onOpenAssignModal,
 }) {
   const { t } = useLanguage();
   const [deletingId, setDeletingId] = useState(null);
 
-  const filtered = assignments.filter((a) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      a.driverName?.toLowerCase().includes(term) ||
-      a.licenseNumber?.toLowerCase().includes(term) ||
-      a.busNumber?.toString().includes(term) ||
-      a.plateNumber?.toLowerCase().includes(term)
-    );
-  });
+  const filtered = useTableSearch(assignments, searchTerm, ATTENDANCE_SEARCH_FIELDS);
 
   const handleDeleteClick = async (id) => {
     if (window.confirm(t.unassignConfirm)) {
@@ -56,7 +35,7 @@ export default function AttendanceTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left rtl:text-right text-xs">
-        <thead className="bg-cream-100/90 text-gray-600 uppercase tracking-wider border-b border-cream-300">
+        <thead className="bg-stone-50 text-slate-500 uppercase tracking-wider border-b border-stone-200/80">
           <tr>
             <th className="py-3 px-4">{t.driver}</th>
             <th className="py-3 px-4">{t.assignedBus}</th>
@@ -64,49 +43,36 @@ export default function AttendanceTable({
             <th className="py-3 px-4 text-right rtl:text-left">{t.actions}</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-cream-200">
+        <tbody className="divide-y divide-stone-100">
           {filtered.map((item) => (
-            <tr
-              key={item.id}
-              className="hover:bg-cream-50 transition-colors group"
-            >
-              {/* Driver Info */}
-              <td className="py-3.5 px-4 font-semibold text-gray-900">
+            <tr key={item.id} className="hover:bg-amber-50/30 transition-colors">
+              <td className="py-3.5 px-4 font-semibold text-slate-800">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 bg-sky-100 text-sky-700 rounded-xl">
+                  <div className="p-1.5 bg-sky-50 text-sky-600 rounded-xl border border-sky-100">
                     <User className="w-4 h-4" />
                   </div>
-                  <div>
-                    <div className="font-bold text-gray-900">{item.driverName || 'Driver'}</div>
-                  </div>
+                  <div className="font-bold text-slate-800">{item.driverName || 'Driver'}</div>
                 </div>
               </td>
 
-              {/* Assigned Bus */}
               <td className="py-3.5 px-4">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <span className="font-bold text-gray-900 font-mono">
-                      {item.busNumber ?? '-'}#
-                    </span>
-                    {item.plateNumber && (
-                      <div className="text-[11px] text-gray-500 font-mono">
-                        {item.plateNumber}
-                      </div>
-                    )}
+                <span className="font-bold text-slate-800 font-mono">
+                  #{item.busNumber ?? '-'}
+                </span>
+                {item.plateNumber && (
+                  <div className="text-[11px] text-slate-500 font-mono">
+                    {item.plateNumber}
                   </div>
-                </div>
+                )}
               </td>
 
-              {/* Attendance Time */}
-              <td className="py-3.5 px-4 text-gray-600 font-mono text-[11px]">
+              <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-gray-400" />
-                  <span>{formatAssignmentTime(item.createdAt)}</span>
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{formatTime(item.createdAt)}</span>
                 </div>
               </td>
 
-              {/* Actions */}
               <td className="py-3.5 px-4 text-right rtl:text-left">
                 <button
                   type="button"

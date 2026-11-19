@@ -1,6 +1,7 @@
-import TripsTable from '../TripsTable';
-import TripModal from '../TripModal';
-import { fetchTrips } from '../../../services/adminService';
+import TripsTable from './TripsTable';
+import TripModal from './TripModal';
+import { fetchTrips, deleteTrip } from '../../../services/tripService';
+import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 
 export default function TripsTab({
@@ -12,16 +13,20 @@ export default function TripsTab({
   isAdmin = false,
   onError,
 }) {
+  const { t } = useLanguage();
   const {
     isModalOpen,
     setIsModalOpen,
     selectedItemToEdit,
     handleOpenAdd,
     handleOpenEdit,
+    handleDelete,
     handleSaved,
   } = useCrudTab({
     fetchItems: () => fetchTrips(tripDate),
+    deleteItem: deleteTrip,
     setItems: setTrips,
+    confirmDeleteMessage: t.deleteTripConfirm,
     onError,
   });
 
@@ -44,7 +49,7 @@ export default function TripsTab({
         onDateChange={handleTripDateChange}
         onAddTrip={isAdmin ? handleOpenAdd : null}
         onEditTrip={isAdmin ? handleOpenEdit : null}
-        onTripDeleted={handleSaved}
+        onDeleteTrip={isAdmin ? handleDelete : null}
       />
 
       <TripModal
