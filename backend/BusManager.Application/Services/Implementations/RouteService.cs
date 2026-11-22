@@ -26,10 +26,17 @@ namespace BusManager.Application.Services.Implementations
 
         public async Task<bool> CreateRoute(RouteDto routeDto)
         {
+            var normalizedCode = (routeDto.Code ?? string.Empty).Trim();
+            var existing = await _unitOfWork.Route.Get(r => r.Code == normalizedCode);
+            if (existing != null)
+            {
+                return false;
+            }
+
             var newRoute = new Route
             {
-                Name = routeDto.Name,
-                Code = routeDto.Code
+                Name = routeDto.Name.Trim(),
+                Code = normalizedCode
             };
             _unitOfWork.Route.Add(newRoute);
             int rowsAffected = _unitOfWork.Save();
@@ -44,8 +51,8 @@ namespace BusManager.Application.Services.Implementations
                 return null;
             }
 
-            route.Name = routeDto.Name;
-            route.Code = routeDto.Code;
+            route.Name = routeDto.Name.Trim();
+            route.Code = (routeDto.Code ?? string.Empty).Trim();
 
             _unitOfWork.Route.Update(route);
             _unitOfWork.Save();
@@ -58,6 +65,14 @@ namespace BusManager.Application.Services.Implementations
             if (route == null)
             {
                 return false;
+            }
+
+            // Nullify RouteId on any trips referencing this route before deletion
+            var linkedTrips = await _unitOfWork.Trip.GetAll(t => t.RouteId == routeId);
+            foreach (var trip in linkedTrips)
+            {
+                trip.RouteId = null;
+                _unitOfWork.Trip.Update(trip);
             }
 
             _unitOfWork.Route.Delete(route);

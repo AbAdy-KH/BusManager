@@ -34,6 +34,7 @@ namespace BusManager.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Trip>> Create([FromBody] TripDto dto)
         {
             var created = await _tripService.CreateAsync(dto);
@@ -41,6 +42,7 @@ namespace BusManager.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Trip>> Update(string id, [FromBody] TripDto dto)
         {
             var updated = await _tripService.UpdateAsync(id, dto);
@@ -49,6 +51,7 @@ namespace BusManager.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             await _tripService.DeleteAsync(id);

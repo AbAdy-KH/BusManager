@@ -1,18 +1,18 @@
-using System.Text;
 using System.Security.Claims;
+using System.Text;
+using System.Threading.RateLimiting;
+using BusManager.Api.Hubs;
 using BusManager.Application;
 using BusManager.Domain.Entities;
 using BusManager.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using System.Threading.RateLimiting;
-using BusManager.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Identity & Roles
-builder.Services.AddIdentityApiEndpoints<User>()
+// Add Identity Core & Roles
+builder.Services.AddIdentityCore<User>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -42,16 +42,11 @@ builder.Services.AddAuthentication(options =>
         NameClaimType = ClaimTypes.NameIdentifier
     };
 
-    // SignalR sends JWT via query string (?access_token=...) for WebSocket connections.
-    // The default JWT middleware only reads from the Authorization header,
-    // so we must extract it manually for hub endpoints.
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
-
-            // Only read from query string if the request is for a hub
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/trackingHub"))
             {
@@ -66,6 +61,15 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync(
+            "Too many login attempts. Please try again later.",
+            cancellationToken
+        );
+    };
 
     options.AddPolicy("AuthLimit", httpContext =>
     {
@@ -86,10 +90,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("SignalRPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://localhost:5173") // your React dev server origin — change if different
+        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // required for SignalR
+              .AllowCredentials();
     });
 });
 
@@ -99,7 +103,6 @@ builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
 builder.Services.AddSignalR();
 
 var app = builder.Build();
@@ -111,31 +114,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/openapi/v1.json", "My API v1");
-        options.RoutePrefix = "swagger"; 
+        options.RoutePrefix = "swagger";
     });
 }
 
 app.UseHttpsRedirection();
-
 app.UseRateLimiter();
-
 app.UseCors("SignalRPolicy");
-
-app.UseAuthentication(); // 1st: Who are you? (Extracts & checks JWT token)
-app.UseAuthorization();  // 2nd: Are you allowed? (Checks roles/claims)
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapHub<TrackingHub>("/trackingHub");
-
-app.Use(async (context, next) =>
-{
-    await next();
-
-    if (context.Response.StatusCode == StatusCodes.Status429TooManyRequests)
-    {
-        await context.Response.WriteAsync("Too many login attempts. Please try again later.");
-    }
-});
 
 app.Run();

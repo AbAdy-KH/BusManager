@@ -1,16 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using BusManager.Application.Common.DTOs;
+using BusManager.Application.Common.DTOs.Auth;
 using BusManager.Application.Services.Interfaces;
 using BusManager.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
-using BusManager.Application.Common.DTOs.Auth;
-
-
 
 namespace BusManager.Application.Services.Implementations
 {
@@ -21,7 +19,7 @@ namespace BusManager.Application.Services.Implementations
         private readonly IConfiguration _config;
 
         public AuthService(
-            UserManager<User> userManager, 
+            UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration config)
         {
@@ -38,14 +36,16 @@ namespace BusManager.Application.Services.Implementations
                 {
                     UserName = dto.Email,
                     Email = dto.Email,
-                    Name = dto.Name
+                    Name = dto.Name,
+                    PhoneNumber = dto.PhoneNumber
                 },
                 UserRole.Driver => new Driver
                 {
                     UserName = dto.Email,
                     Email = dto.Email,
                     Name = dto.Name,
-                    LicenseNumber = dto.LicenseNumber!
+                    PhoneNumber = dto.PhoneNumber,
+                    LicenseNumber = dto.LicenseNumber ?? string.Empty
                 },
                 _ => throw new ArgumentException("Invalid user type")
             };
@@ -63,7 +63,7 @@ namespace BusManager.Application.Services.Implementations
 
             return result;
         }
-    
+
         public async Task<TokensDto?> Login(LoginRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -77,34 +77,46 @@ namespace BusManager.Application.Services.Implementations
 
         public async Task<TokensDto?> Refresh(TokensDto dto)
         {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.AccessToken) || string.IsNullOrWhiteSpace(dto.RefreshToken))
+                return null;
+
             var principal = _GetPrincipalFromExpiredToken(dto.AccessToken);
-            if(principal == null) return null;
+            if (principal == null) return null;
 
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(string.IsNullOrEmpty(userId)) return null;
+            if (string.IsNullOrEmpty(userId)) return null;
 
             var user = await _userManager.FindByIdAsync(userId);
-            if(user == null || user.RefreshTokenRevokedAt != null || user.RefreshTokenExpiresAt <= DateTime.UtcNow) return null;
+            if (user == null ||
+                string.IsNullOrEmpty(user.RefreshTokenHash) ||
+                user.RefreshTokenRevokedAt != null ||
+                user.RefreshTokenExpiresAt <= DateTime.UtcNow)
+            {
+                return null;
+            }
 
             bool isValidRefreshToken = BCrypt.Net.BCrypt.Verify(dto.RefreshToken, user.RefreshTokenHash);
-            if(!isValidRefreshToken) return null;
+            if (!isValidRefreshToken) return null;
 
             return await _GenerateAndSaveTokens(user);
         }
 
         public async Task<bool> Logout(TokensDto dto)
         {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.AccessToken) || string.IsNullOrWhiteSpace(dto.RefreshToken))
+                return false;
+
             var principal = _GetPrincipalFromExpiredToken(dto.AccessToken);
-            if(principal == null) return false;
+            if (principal == null) return false;
 
             string? userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(string.IsNullOrEmpty(userId)) return false;
+            if (string.IsNullOrEmpty(userId)) return false;
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return false;
+            if (user == null || string.IsNullOrEmpty(user.RefreshTokenHash)) return false;
 
             bool isValidRefreshToken = BCrypt.Net.BCrypt.Verify(dto.RefreshToken, user.RefreshTokenHash);
-            if(!isValidRefreshToken) return false;
+            if (!isValidRefreshToken) return false;
 
             user.RefreshTokenHash = null;
             user.RefreshTokenExpiresAt = null;
@@ -119,19 +131,18 @@ namespace BusManager.Application.Services.Implementations
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim("Name", user.Name)
             };
 
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
-                // claims.Add(new Claim("role", role));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            
+
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
@@ -140,9 +151,9 @@ namespace BusManager.Application.Services.Implementations
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);            
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        
+
         private string _GenerateRefreshToken()
         {
             var bytes = new byte[64];
@@ -162,14 +173,14 @@ namespace BusManager.Application.Services.Implementations
             await _userManager.UpdateAsync(user);
 
             var roles = await _userManager.GetRolesAsync(user);
-            string accessToken = _GenerateJwtToken(user, roles); 
+            string accessToken = _GenerateJwtToken(user, roles);
 
             return new TokensDto(
                 AccessToken: accessToken,
                 RefreshToken: refreshToken
-            );          
+            );
         }
-        
+
         private ClaimsPrincipal? _GetPrincipalFromExpiredToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) return null;
@@ -182,13 +193,13 @@ namespace BusManager.Application.Services.Implementations
                     ValidateIssuer = false,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!)),
-                    ValidateLifetime = false // IMPORTANT: ignore expiration date here
+                    ValidateLifetime = false
                 };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
 
-                if (securityToken is not JwtSecurityToken jwtSecurityToken || 
+                if (securityToken is not JwtSecurityToken jwtSecurityToken ||
                     !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 {
                     return null;

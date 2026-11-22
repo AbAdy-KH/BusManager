@@ -31,7 +31,7 @@ namespace BusManager.Api.Controllers
         [Authorize(Roles = "Admin,Driver")]
         public async Task<ActionResult<StopPoint>> GetById(string id)
         {
-            StopPoint stopPoint = await _stopService.GetStopPointById(id);
+            var stopPoint = await _stopService.GetStopPointById(id);
             if (stopPoint == null)
             {
                 return NotFound();
@@ -55,7 +55,7 @@ namespace BusManager.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StopPoint>> Update(string id, [FromBody] StopPointDto stopPointDto)
         {
-            StopPoint stopPoint = await _stopService.UpdateStopPoint(id, stopPointDto);
+            var stopPoint = await _stopService.UpdateStopPoint(id, stopPointDto);
             if (stopPoint == null)
             {
                 return NotFound();

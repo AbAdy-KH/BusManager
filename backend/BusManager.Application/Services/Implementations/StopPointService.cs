@@ -1,5 +1,3 @@
-
-
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Common.Interfaces;
 using BusManager.Application.Services.Interfaces;
@@ -18,13 +16,14 @@ namespace BusManager.Application.Services.Implementations
 
         public async Task<bool> CreateStopPoint(StopPointDto stopPointDto)
         {
-            var stopPoint = new StopPoint{ 
-                Address  = stopPointDto.Address,
+            var stopPoint = new StopPoint
+            {
+                Address = stopPointDto.Address,
                 IsActive = stopPointDto.IsActive,
                 IsDropPoint = stopPointDto.IsDropPoint,
                 Latitude = stopPointDto.Latitude,
                 Longitude = stopPointDto.Longitude,
-                Name = stopPointDto.Name                 
+                Name = stopPointDto.Name
             };
             _unitOfWork.Stop.Add(stopPoint);
             int rowsAffected = _unitOfWork.Save();
@@ -33,35 +32,32 @@ namespace BusManager.Application.Services.Implementations
 
         public async Task<bool> DeleteStopPoint(string stopPointId)
         {
-            var stopPoint  = await _unitOfWork.Stop.Get(u => u.Id == stopPointId);
-            if(stopPoint == null)
+            var stopPoint = await _unitOfWork.Stop.Get(u => u.Id == stopPointId);
+            if (stopPoint == null)
                 return false;
             _unitOfWork.Stop.Delete(stopPoint);
             int rowsAffected = _unitOfWork.Save();
             return rowsAffected > 0;
-            
         }
 
         public async Task<IEnumerable<StopPoint>> GetAllStops()
         {
-            var stops = await _unitOfWork.Stop.GetAll();
-
-            return stops;
+            return await _unitOfWork.Stop.GetAll();
         }
 
-        public async Task<StopPoint> GetStopPointById(string StopPointId)
+        public async Task<StopPoint?> GetStopPointById(string StopPointId)
         {
-            var stopPoint = await _unitOfWork.Stop.Get(u => u.Id == StopPointId);
-            return stopPoint;
+            return await _unitOfWork.Stop.Get(u => u.Id == StopPointId);
         }
 
-        public async Task<StopPoint> UpdateStopPoint(string stopPointId, StopPointDto stopPointDto)
+        public async Task<StopPoint?> UpdateStopPoint(string stopPointId, StopPointDto stopPointDto)
         {
-            StopPoint stopPoint = await _unitOfWork.Stop.Get(u => u.Id == stopPointId);
-            if(stopPoint == null)
+            var stopPoint = await _unitOfWork.Stop.Get(u => u.Id == stopPointId);
+            if (stopPoint == null)
             {
                 return null;
             }
+            stopPoint.Address = stopPointDto.Address;
             stopPoint.IsActive = stopPointDto.IsActive;
             stopPoint.IsDropPoint = stopPointDto.IsDropPoint;
             stopPoint.Latitude = stopPointDto.Latitude;

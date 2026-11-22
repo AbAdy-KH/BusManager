@@ -1,4 +1,4 @@
-
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BusManager.Application.Common.DTOs;
@@ -21,13 +21,13 @@ namespace BusManager.Application.Services.Implementations
         {
             var drivers = await _unitOfWork.Driver.GetAll(null);
 
-            List<DriverListDto> driverListDto = new List<DriverListDto>();
-            foreach(var driver in drivers)
+            var driverListDto = new List<DriverListDto>();
+            foreach (var driver in drivers)
             {
                 driverListDto.Add(
                     new DriverListDto(
                         driver.Id,
-                        driver.Name, 
+                        driver.Name,
                         driver.LicenseNumber
                     )
                 );
@@ -35,8 +35,8 @@ namespace BusManager.Application.Services.Implementations
 
             return driverListDto;
         }
-    
-public async Task<DriverDto?> GetDriverById(string id)
+
+        public async Task<DriverDto?> GetDriverById(string id)
         {
             var driver = await _unitOfWork.Driver.Get(d => d.Id == id);
             if (driver == null) return null;
@@ -51,12 +51,23 @@ public async Task<DriverDto?> GetDriverById(string id)
 
         public async Task<bool> CreateDriver(DriverDto driverDto)
         {
+            var email = string.IsNullOrWhiteSpace(driverDto.Email)
+                ? null
+                : driverDto.Email.Trim();
+
+            var userName = email ?? $"driver_{Guid.NewGuid():N}";
+
             var driver = new Driver
             {
-                Name = driverDto.Name,
-                LicenseNumber = driverDto.LicenseNumber,
+                Name = driverDto.Name.Trim(),
+                LicenseNumber = (driverDto.LicenseNumber ?? string.Empty).Trim(),
                 PhoneNumber = driverDto.PhoneNumber,
-                Email = driverDto.Email,
+                Email = email,
+                NormalizedEmail = email?.ToUpperInvariant(),
+                UserName = userName,
+                NormalizedUserName = userName.ToUpperInvariant(),
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
             };
             _unitOfWork.Driver.Add(driver);
             int rows = _unitOfWork.Save();
@@ -67,10 +78,14 @@ public async Task<DriverDto?> GetDriverById(string id)
         {
             var driver = await _unitOfWork.Driver.Get(d => d.Id == id);
             if (driver == null) return false;
-            driver.Name = driverDto.Name;
-            driver.LicenseNumber = driverDto.LicenseNumber;
+            driver.Name = driverDto.Name.Trim();
+            driver.LicenseNumber = (driverDto.LicenseNumber ?? string.Empty).Trim();
             driver.PhoneNumber = driverDto.PhoneNumber;
-            driver.Email = driverDto.Email;
+            if (!string.IsNullOrWhiteSpace(driverDto.Email))
+            {
+                driver.Email = driverDto.Email.Trim();
+                driver.NormalizedEmail = driver.Email.ToUpperInvariant();
+            }
             _unitOfWork.Driver.Update(driver);
             int rows = _unitOfWork.Save();
             return rows > 0;
@@ -83,5 +98,6 @@ public async Task<DriverDto?> GetDriverById(string id)
             _unitOfWork.Driver.Delete(driver);
             int rows = _unitOfWork.Save();
             return rows > 0;
-        }    }
+        }
+    }
 }

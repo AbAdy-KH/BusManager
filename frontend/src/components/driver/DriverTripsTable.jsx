@@ -1,4 +1,4 @@
-import { Route as RouteIcon, Calendar, Clock, Play, Square, CheckCircle2 } from 'lucide-react';
+import { Route as RouteIcon, Calendar, Clock, Play, Square, CheckCircle2, Map as MapIcon } from 'lucide-react';
 import { useLanguage } from '../../context/useLanguage';
 import { formatTime } from '../../utils/dateUtils';
 
@@ -7,6 +7,8 @@ export default function DriverTripsTable({
   loading,
   dateStr,
   busId,
+  selectedTripId,
+  onSelectTrip,
   onStartTrip,
   onEndTrip,
   actionLoadingId,
@@ -97,11 +99,26 @@ export default function DriverTripsTable({
                 const isInProgress = statusNormalized === 'inprogress';
                 const isCompleted = statusNormalized === 'completed';
                 const isCurrentActionLoading = actionLoadingId === tripId;
+                const isSelectedOnMap = selectedTripId === tripId;
 
                 return (
-                  <tr key={tripId || trip.routeName} className="hover:bg-amber-50/30 transition-colors">
+                  <tr
+                    key={tripId || trip.routeName}
+                    onClick={() => onSelectTrip?.(tripId)}
+                    className={`transition-colors cursor-pointer ${
+                      isSelectedOnMap
+                        ? 'bg-indigo-50/50 hover:bg-indigo-50/80'
+                        : 'hover:bg-amber-50/30'
+                    }`}
+                  >
                     <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
-                      <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+                      <div
+                        className={`p-2 rounded-xl border ${
+                          isSelectedOnMap
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        }`}
+                      >
                         <RouteIcon className="w-4 h-4" />
                       </div>
                       <span>{trip.routeName || '-'}</span>
@@ -138,53 +155,72 @@ export default function DriverTripsTable({
                       {getStatusBadge(trip.status)}
                     </td>
 
-                    <td className="py-3.5 px-4 text-center">
-                      {isCompleted ? (
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>{t.statusCompleted || 'Completed'}</span>
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center gap-2 justify-center">
-                          <button
-                            type="button"
-                            disabled={!isScheduled || isCurrentActionLoading}
-                            onClick={() => onStartTrip?.(tripId)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-colors shadow-xs ${
-                              isScheduled && !isCurrentActionLoading
-                                ? 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer active:scale-95'
-                                : 'bg-stone-100 text-slate-400 border border-stone-200 cursor-not-allowed opacity-60'
-                            }`}
-                            title={isScheduled ? t.startTrip : undefined}
-                          >
-                            {isCurrentActionLoading && isScheduled ? (
-                              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                              <Play className="w-3.5 h-3.5 fill-current" />
-                            )}
-                            <span>{isCurrentActionLoading && isScheduled ? (t.startingTrip || 'Starting...') : (t.startTrip || 'Start Trip')}</span>
-                          </button>
+                    <td
+                      className="py-3.5 px-4 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="inline-flex items-center gap-2 justify-center">
+                        <button
+                          type="button"
+                          onClick={() => onSelectTrip?.(tripId)}
+                          title={t.previewRoute}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                            isSelectedOnMap
+                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                              : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                          }`}
+                        >
+                          <MapIcon className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">{t.previewRoute}</span>
+                        </button>
 
-                          <button
-                            type="button"
-                            disabled={!isInProgress || isCurrentActionLoading}
-                            onClick={() => onEndTrip?.(tripId)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-colors shadow-xs ${
-                              isInProgress && !isCurrentActionLoading
-                                ? 'bg-rose-600 hover:bg-rose-500 text-white cursor-pointer active:scale-95 animate-pulse-subtle'
-                                : 'bg-stone-100 text-slate-400 border border-stone-200 cursor-not-allowed opacity-60'
-                            }`}
-                            title={isInProgress ? t.endTrip : undefined}
-                          >
-                            {isCurrentActionLoading && isInProgress ? (
-                              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                              <Square className="w-3.5 h-3.5 fill-current" />
-                            )}
-                            <span>{isCurrentActionLoading && isInProgress ? (t.endingTrip || 'Ending...') : (t.endTrip || 'End Trip')}</span>
-                          </button>
-                        </div>
-                      )}
+                        {isCompleted ? (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-medium text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{t.statusCompleted || 'Completed'}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              disabled={!isScheduled || isCurrentActionLoading}
+                              onClick={() => onStartTrip?.(tripId)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-colors shadow-xs ${
+                                isScheduled && !isCurrentActionLoading
+                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer active:scale-95'
+                                  : 'bg-stone-100 text-slate-400 border border-stone-200 cursor-not-allowed opacity-60'
+                              }`}
+                              title={isScheduled ? t.startTrip : undefined}
+                            >
+                              {isCurrentActionLoading && isScheduled ? (
+                                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                              )}
+                              <span>{isCurrentActionLoading && isScheduled ? (t.startingTrip || 'Starting...') : (t.startTrip || 'Start Trip')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={!isInProgress || isCurrentActionLoading}
+                              onClick={() => onEndTrip?.(tripId)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-colors shadow-xs ${
+                                isInProgress && !isCurrentActionLoading
+                                  ? 'bg-rose-600 hover:bg-rose-500 text-white cursor-pointer active:scale-95 animate-pulse-subtle'
+                                  : 'bg-stone-100 text-slate-400 border border-stone-200 cursor-not-allowed opacity-60'
+                              }`}
+                              title={isInProgress ? t.endTrip : undefined}
+                            >
+                              {isCurrentActionLoading && isInProgress ? (
+                                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                <Square className="w-3.5 h-3.5 fill-current" />
+                              )}
+                              <span>{isCurrentActionLoading && isInProgress ? (t.endingTrip || 'Ending...') : (t.endTrip || 'End Trip')}</span>
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

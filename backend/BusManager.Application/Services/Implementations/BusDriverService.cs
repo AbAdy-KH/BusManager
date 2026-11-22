@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using BusManager.Application.Common.DTOs;
@@ -92,11 +91,27 @@ namespace BusManager.Application.Services
 
         public async Task<bool> CreateBusDriver(BusDriverDto busDriverDto)
         {
+            var createdAt = busDriverDto.CreatedAt != default ? busDriverDto.CreatedAt : DateTime.UtcNow;
+            var targetDate = createdAt.Date;
+            var nextDate = targetDate.AddDays(1);
+
+            // Prevent duplicate exact same driver+bus assignment on the same day
+            var existing = await _unitOfWork.BusDriver.Get(
+                b => b.DriverId == busDriverDto.DriverId &&
+                     b.BusId == busDriverDto.BusId &&
+                     b.CreatedAt >= targetDate &&
+                     b.CreatedAt < nextDate
+            );
+            if (existing != null)
+            {
+                return true;
+            }
+
             var busDriver = new BusDriver
             {
                 BusId = busDriverDto.BusId,
                 DriverId = busDriverDto.DriverId,
-                CreatedAt = busDriverDto.CreatedAt != default ? busDriverDto.CreatedAt : DateTime.UtcNow
+                CreatedAt = createdAt
             };
 
             _unitOfWork.BusDriver.Add(busDriver);

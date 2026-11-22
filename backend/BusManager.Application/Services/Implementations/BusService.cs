@@ -13,35 +13,44 @@ namespace BusManager.Application.Services.Implementations
         {
             _unitOfWork = unitOfWork;
         }
+
         public async Task<IEnumerable<Bus>> GetAllBuses()
         {
-            return await _unitOfWork.Bus.GetAll();    
+            return await _unitOfWork.Bus.GetAll();
         }
-        public async Task<Bus> GetBusById(string BusId)
+
+        public async Task<Bus?> GetBusById(string BusId)
         {
             return await _unitOfWork.Bus.Get(u => u.Id == BusId);
         }
 
         public async Task<bool> CreateBus(BusDto busDto)
         {
+            var normalizedPlate = (busDto.PlateNumber ?? string.Empty).Trim();
+            var existing = await _unitOfWork.Bus.Get(
+                b => b.Number == busDto.Number || b.PlateNumber == normalizedPlate
+            );
+            if (existing != null)
+            {
+                return false;
+            }
 
             var newBus = new Bus
             {
                 Capacity = busDto.Capacity,
                 IsActive = busDto.IsActive,
                 Number = busDto.Number,
-                PlateNumber = busDto.PlateNumber
+                PlateNumber = normalizedPlate
             };
             _unitOfWork.Bus.Add(newBus);
-            int rowsAffected =  _unitOfWork.Save();
+            int rowsAffected = _unitOfWork.Save();
             return rowsAffected > 0;
-            
         }
 
         public async Task<bool> DeleteBus(string BusId)
         {
             var bus = await _unitOfWork.Bus.Get(u => u.Id == BusId);
-            if(bus == null)
+            if (bus == null)
             {
                 return false;
             }
@@ -50,23 +59,20 @@ namespace BusManager.Application.Services.Implementations
             return rowsAffected > 0;
         }
 
-
-
-        public async Task<Bus> UpdateBus(string BusId, BusDto busDto)
+        public async Task<Bus?> UpdateBus(string BusId, BusDto busDto)
         {
             var bus = await _unitOfWork.Bus.Get(u => u.Id == BusId);
-            if(bus == null)
+            if (bus == null)
             {
                 return null;
             }
-            bus.PlateNumber = busDto.PlateNumber;
+            bus.PlateNumber = (busDto.PlateNumber ?? string.Empty).Trim();
             bus.Capacity = busDto.Capacity;
             bus.Number = busDto.Number;
             bus.IsActive = busDto.IsActive;
             _unitOfWork.Bus.Update(bus);
             _unitOfWork.Save();
             return bus;
-
         }
     }
 }

@@ -1,4 +1,3 @@
-
 using System.Linq.Expressions;
 using BusManager.Application.Common.DTOs;
 using BusManager.Application.Common.Interfaces;
@@ -14,32 +13,34 @@ namespace BusManager.Application.Services.Implementations
         public TripService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-        }        
+        }
 
         public async Task<IEnumerable<TripListDto>> GetTripsList(DateTime? date = null)
         {
             Expression<Func<Trip, bool>>? filter = null;
-            if(date != null) 
+            if (date != null)
             {
-                var startDate = date?.Date;
-                var endDate = startDate?.AddDays(1);
+                var startDate = date.Value.Date;
+                var endDate = startDate.AddDays(1);
 
-                filter =(t => t.ScheduledStartTime >= startDate && t.ScheduledStartTime < endDate);
+                filter = (t => t.ScheduledStartTime >= startDate && t.ScheduledStartTime < endDate);
             }
 
             var tripList = await _unitOfWork.Trip.GetAll(
-                filter
-                , "BusDriver, BusDriver.Driver, BusDriver.Bus, Route");
+                filter,
+                "BusDriver, BusDriver.Driver, BusDriver.Bus, Route"
+            );
 
-            List<TripListDto> tripListDto = new List<TripListDto>();
+            var tripListDto = new List<TripListDto>();
 
-            foreach(var trip in tripList)
+            foreach (var trip in tripList)
             {
                 tripListDto.Add(
                     new TripListDto(
                         trip.Id,
-                        trip.BusDriver?.Driver.Name,
-                        trip.BusDriver?.Bus.Number,
+                        trip.BusDriver?.Driver?.Name,
+                        trip.BusDriver?.Bus?.Number,
+                        trip.RouteId,
                         trip.Route?.Name,
                         trip.Status.ToString(),
                         trip.ScheduledStartTime,
@@ -64,7 +65,7 @@ namespace BusManager.Application.Services.Implementations
             var trip = new Trip
             {
                 BusDriverId = dto.BusDriverId,
-                RouteId = dto.RouteId,
+                RouteId = string.IsNullOrWhiteSpace(dto.RouteId) ? null : dto.RouteId,
                 ScheduledStartTime = dto.ScheduledStartTime.ToLocalTime(),
                 ScheduledArrivalTime = dto.ScheduledArrivalTime.ToLocalTime(),
                 Direction = dto.Direction,
@@ -77,19 +78,17 @@ namespace BusManager.Application.Services.Implementations
             return trip;
         }
 
-        public async Task<Trip> UpdateAsync(string id, TripDto dto)
+        public async Task<Trip?> UpdateAsync(string id, TripDto dto)
         {
             var trip = await _unitOfWork.Trip.Get(t => t.Id == id);
             if (trip == null)
                 return null;
 
             trip.BusDriverId = dto.BusDriverId;
-            trip.RouteId = dto.RouteId;
-
-            trip.ScheduledStartTime = dto.ScheduledStartTime;
-            trip.ScheduledArrivalTime = dto.ScheduledArrivalTime;
+            trip.RouteId = string.IsNullOrWhiteSpace(dto.RouteId) ? null : dto.RouteId;
+            trip.ScheduledStartTime = dto.ScheduledStartTime.ToLocalTime();
+            trip.ScheduledArrivalTime = dto.ScheduledArrivalTime.ToLocalTime();
             trip.Direction = dto.Direction;
-
             trip.Notes = dto.Notes;
 
             _unitOfWork.Trip.Update(trip);
