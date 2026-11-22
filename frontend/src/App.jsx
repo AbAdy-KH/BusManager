@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
@@ -8,6 +9,13 @@ import DriverPage from './pages/DriverPage';
 import BusDriverPage from './pages/BusDriverPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
+
+function RequireRole({ role, children }) {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/" replace />;
+  if (role && !user?.roles?.includes(role)) return <Navigate to="/" replace />;
+  return children;
+}
 
 export default function App() {
   return (
@@ -22,7 +30,9 @@ export default function App() {
             <Route
               path="admin"
               element={
+                <RequireRole role="Admin">
                   <AdminPage />
+                </RequireRole>
               }
             />
 
@@ -30,7 +40,9 @@ export default function App() {
             <Route
               path="admin/attendance"
               element={
+                <RequireRole role="Admin">
                   <BusDriverPage />
+                </RequireRole>
               }
             />
             <Route path="bus-driver" element={<Navigate to="/admin/attendance" replace />} />
@@ -40,7 +52,9 @@ export default function App() {
             <Route
               path="driver"
               element={
+                <RequireRole role="Driver">
                   <DriverPage />
+                </RequireRole>
               }
             />
 

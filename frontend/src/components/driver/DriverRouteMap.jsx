@@ -49,10 +49,11 @@ export default function DriverRouteMap({
   }
 
   const isInProgress = (trip.status || '').toLowerCase() === 'inprogress';
-  const dirDisplay =
-    (trip.direction || '').toString().toLowerCase() === 'outbound' || trip.direction === '0'
-      ? t.outbound
-      : t.inbound;
+  const isOutbound =
+    trip.direction === 0 ||
+    trip.direction === '0' ||
+    String(trip.direction || '').toLowerCase() === 'outbound';
+  const dirDisplay = isOutbound ? t.outbound : t.inbound;
 
   return (
     <div className="bg-white border border-stone-200/90 rounded-2xl shadow-sm overflow-hidden flex flex-col">

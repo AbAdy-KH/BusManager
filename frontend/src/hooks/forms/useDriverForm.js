@@ -15,14 +15,15 @@ export function useDriverForm({ isOpen, driver, onSuccess, onClose }) {
     if (!isOpen) return;
     setError(null);
     if (isEdit) {
-      if (driver.name && driver.licenseNumber) {
-        setName(driver.name);
+      const id = driver.driverId || driver.id;
+      if (driver.name !== undefined && driver.licenseNumber !== undefined) {
+        setName(driver.name || '');
         setLicenseNumber(driver.licenseNumber || '');
-      } else if (driver.id) {
-        fetchDriverById(driver.id)
+      } else if (id) {
+        fetchDriverById(id)
           .then((full) => {
-            setName(full.name || '');
-            setLicenseNumber(full.licenseNumber || '');
+            setName(full?.name || '');
+            setLicenseNumber(full?.licenseNumber || '');
           })
           .catch(() => {
             setError(t.driverLoadError || 'Failed to load driver data');
@@ -40,15 +41,19 @@ export function useDriverForm({ isOpen, driver, onSuccess, onClose }) {
       setError(t.driverNameRequired || 'Driver name is required');
       return;
     }
+    if (!licenseNumber.trim()) {
+      setError(t.licenseNumberRequired || 'License number is required');
+      return;
+    }
     setSubmitting(true);
     setError(null);
     const payload = {
       name: name.trim(),
-      licenseNumber: licenseNumber.trim() || null,
+      licenseNumber: licenseNumber.trim(),
     };
     try {
       if (isEdit) {
-        const id = driver.id || driver.driverId;
+        const id = driver.driverId || driver.id;
         await updateDriver(id, payload);
       } else {
         await createDriver(payload);

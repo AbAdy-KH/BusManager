@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../context/useLanguage';
 import { assignBusToDriver } from '../../services/attendanceService';
+import { getTodayDateString } from '../../utils/dateUtils';
 
 export function useAssignBusForm({
   isOpen,
@@ -14,7 +15,7 @@ export function useAssignBusForm({
 
   const [driverId, setDriverId] = useState(initialDriverId);
   const [busId, setBusId] = useState('');
-  const [date, setDate] = useState(selectedDate || new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(selectedDate || getTodayDateString());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,7 +24,7 @@ export function useAssignBusForm({
     setError(null);
     setDriverId(initialDriverId || '');
     setBusId('');
-    setDate(selectedDate || new Date().toISOString().slice(0, 10));
+    setDate(selectedDate || getTodayDateString());
   }, [isOpen, initialDriverId, selectedDate]);
 
   const assignedDriverIds = useMemo(
@@ -48,7 +49,9 @@ export function useAssignBusForm({
 
     try {
       const now = new Date();
-      const createdAt = `${date}T${now.toTimeString().slice(0, 8)}Z`;
+      const pad = (n) => String(n).padStart(2, '0');
+      const localTime = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const createdAt = `${date}T${localTime}`;
 
       await assignBusToDriver({
         busId,

@@ -70,7 +70,10 @@ let driverConnection = null;
 let connectionPromise = null;
 
 async function getDriverConnection() {
-  if (driverConnection?.state === signalR.HubConnectionState.Connected) {
+  if (
+    driverConnection?.state === signalR.HubConnectionState.Connected ||
+    driverConnection?.state === signalR.HubConnectionState.Reconnecting
+  ) {
     return driverConnection;
   }
 
@@ -89,16 +92,12 @@ async function getDriverConnection() {
 }
 
 export async function sendDriverLocation(location) {
-  try {
-    const connection = await getDriverConnection();
-    await connection.invoke('SendBusLocation', {
-      busId: Number(location.busId),
-      latitude: Number(location.latitude),
-      longitude: Number(location.longitude),
-    });
-  } catch (err) {
-    console.error('Failed to send driver location:', err);
-  }
+  const connection = await getDriverConnection();
+  await connection.invoke('SendBusLocation', {
+    busId: Number(location.busId),
+    latitude: Number(location.latitude),
+    longitude: Number(location.longitude),
+  });
 }
 
 export async function closeDriverConnection() {

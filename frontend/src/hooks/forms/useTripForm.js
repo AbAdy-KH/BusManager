@@ -3,16 +3,17 @@ import { useLanguage } from '../../context/useLanguage';
 import { createTrip, updateTrip, fetchTripById } from '../../services/tripService';
 import { fetchBusDriverAssignments } from '../../services/attendanceService';
 import { fetchRoutes } from '../../services/routeService';
+import { getTodayDateString } from '../../utils/dateUtils';
 
 function toDateTimeLocal(isoString, fallbackDate = '', fallbackTime = '08:00') {
   if (!isoString) {
-    const base = fallbackDate || new Date().toISOString().slice(0, 10);
+    const base = fallbackDate || getTodayDateString();
     return `${base}T${fallbackTime}`;
   }
   try {
     const d = new Date(isoString);
     if (isNaN(d.getTime())) {
-      const base = fallbackDate || new Date().toISOString().slice(0, 10);
+      const base = fallbackDate || getTodayDateString();
       return `${base}T${fallbackTime}`;
     }
     const pad = (n) => String(n).padStart(2, '0');
@@ -23,7 +24,7 @@ function toDateTimeLocal(isoString, fallbackDate = '', fallbackTime = '08:00') {
     const min = pad(d.getMinutes());
     return `${y}-${m}-${day}T${h}:${min}`;
   } catch {
-    const base = fallbackDate || new Date().toISOString().slice(0, 10);
+    const base = fallbackDate || getTodayDateString();
     return `${base}T${fallbackTime}`;
   }
 }
@@ -50,7 +51,10 @@ export function useTripForm({ isOpen, trip, defaultDate = '', onSuccess, onClose
     if (!isOpen) return;
 
     setError(null);
-    const targetDate = defaultDate || new Date().toISOString().slice(0, 10);
+    const tripDateStr = trip?.scheduledStartTime
+      ? toDateTimeLocal(trip.scheduledStartTime, defaultDate).slice(0, 10)
+      : '';
+    const targetDate = tripDateStr || defaultDate || getTodayDateString();
 
     setLoadingAssignments(true);
     fetchBusDriverAssignments(targetDate || null)

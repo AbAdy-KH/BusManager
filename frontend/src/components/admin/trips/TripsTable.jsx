@@ -106,7 +106,7 @@ export default function TripsTable({
               <tr>
                 <th className="py-3.5 px-4">{t.route}</th>
                 <th className="py-3.5 px-4">{t.direction}</th>
-                <th className="py-3.5 px-4">{t.buses.slice(0, -2) || t.buses}</th>
+                <th className="py-3.5 px-4">{t.bus || t.buses}</th>
                 <th className="py-3.5 px-4">{t.driver}</th>
                 <th className="py-3.5 px-4">{t.schedule}</th>
                 <th className="py-3.5 px-4">{t.status}</th>
@@ -116,7 +116,21 @@ export default function TripsTable({
             <tbody className="divide-y divide-stone-100">
               {filteredTrips.map((trip) => {
                 const id = trip.tripId || trip.id;
-                const dirDisplay = trip.direction === 'Outbound' || trip.direction === 'ذهاب' ? 'ذهاب' : 'اياب';
+                const isOutbound =
+                  trip.direction === 0 ||
+                  trip.direction === '0' ||
+                  String(trip.direction || '').toLowerCase() === 'outbound' ||
+                  trip.direction === 'ذهاب';
+                const dirDisplay = isOutbound ? t.outbound : t.inbound;
+                const statusKey = (trip.status || '').toLowerCase();
+                const statusDisplay =
+                  statusKey === 'inprogress'
+                    ? t.statusInProgress
+                    : statusKey === 'completed'
+                    ? t.statusCompleted
+                    : statusKey === 'cancelled'
+                    ? t.statusCancelled
+                    : t.statusScheduled || trip.status;
                 return (
                   <tr key={id || trip.routeName} className="hover:bg-amber-50/30 transition-colors">
                     <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
@@ -158,7 +172,7 @@ export default function TripsTable({
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 capitalize shadow-xs">
-                        {trip.status}
+                        {statusDisplay}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right rtl:text-left">

@@ -13,9 +13,10 @@ export async function fetchWithAuth(endpoint, options = {}, isRetry = false) {
     ...(options.headers || {}),
   };
 
-  if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+  let body = options.body;
+  if (body && typeof body === 'object' && !(body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
-    options.body = JSON.stringify(options.body);
+    body = JSON.stringify(body);
   }
 
   if (token) {
@@ -25,6 +26,7 @@ export async function fetchWithAuth(endpoint, options = {}, isRetry = false) {
   const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
+    body,
   });
 
   // If 401 Unauthorized received, attempt a single refresh and retry
@@ -43,8 +45,13 @@ export async function fetchWithAuth(endpoint, options = {}, isRetry = false) {
     let errorDetail = `Failed request to ${endpoint} (Status ${response.status})`;
     try {
       const errorData = await response.json();
-      if (typeof errorData === 'string') errorDetail = errorData;
-      else if (errorData.message || errorData.title) errorDetail = errorData.message || errorData.title;
+      if (typeof errorData === 'string') {
+        errorDetail = errorData;
+      } else if (errorData.errors) {
+        errorDetail = Object.values(errorData.errors).flat().join(' ');
+      } else if (errorData.message || errorData.title) {
+        errorDetail = errorData.message || errorData.title;
+      }
     } catch {
       // ignore
     }

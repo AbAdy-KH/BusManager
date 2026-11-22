@@ -19,7 +19,7 @@ export default function FleetMap({ stops = [], liveBuses = [] }) {
         <NavigationControl position="top-right" />
 
         {/* Drop Points (Purple) */}
-        <Source id="drop-stops-source" type="geojson" data={pickPointsGeoJSON}>
+        <Source id="drop-stops-source" type="geojson" data={dropPointsGeoJSON}>
           <Layer
             id="drop-stops-layer"
             type="circle"
@@ -33,7 +33,7 @@ export default function FleetMap({ stops = [], liveBuses = [] }) {
         </Source>
 
         {/* Pick Points (Red) */}
-        <Source id="pick-stops-source" type="geojson" data={dropPointsGeoJSON}>
+        <Source id="pick-stops-source" type="geojson" data={pickPointsGeoJSON}>
           <Layer
             id="pick-stops-layer"
             type="circle"
@@ -59,7 +59,7 @@ export default function FleetMap({ stops = [], liveBuses = [] }) {
                 cursor: 'pointer',
                 filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.4))',
               }}
-              title={bus.name}
+              title={`Bus #${bus.busId}`}
             >
               🚌
             </div>

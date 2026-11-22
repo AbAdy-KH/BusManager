@@ -7,7 +7,7 @@ export function useDriverLocationSender() {
   const { user } = useAuth();
   const isDriver = user?.roles?.includes('Driver');
 
-  const [busId, setBusId] = useState(1);
+  const [busId, setBusId] = useState(null);
   const [coordinates, setCoordinates] = useState(null);
   const [lastSentTime, setLastSentTime] = useState(null);
   const [isSending] = useState(() => isDriver);
@@ -44,9 +44,11 @@ export function useDriverLocationSender() {
     let watchId = null;
 
     async function transmitPosition(lat, lng) {
+      if (!busIdRef.current) return;
+
       try {
         await sendDriverLocation({
-          busId: Number(busIdRef.current) || 1,
+          busId: Number(busIdRef.current),
           latitude: Number(lat),
           longitude: Number(lng),
         });

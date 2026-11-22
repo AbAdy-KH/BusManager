@@ -22,13 +22,13 @@ export function useDriverPage() {
       const allTrips = await fetchTrips(getTodayDateString());
       const driverTrips = (allTrips || []).filter(
         (trip) =>
-          !trip.driverName ||
-          trip.driverName?.toLowerCase() === user?.name?.toLowerCase() ||
-          trip.driverName?.toLowerCase() === user?.email?.toLowerCase()
+          trip.driverName &&
+          (trip.driverName.toLowerCase() === user?.name?.toLowerCase() ||
+            trip.driverName.toLowerCase() === user?.email?.toLowerCase())
       );
       setTrips(driverTrips);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('Failed to load driver trips:', err);
     } finally {
       setLoading(false);
     }

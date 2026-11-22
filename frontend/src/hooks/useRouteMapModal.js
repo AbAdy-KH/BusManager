@@ -35,6 +35,7 @@ export function useRouteMapModal({ isOpen, route, routeStops = [] }) {
     }
 
     let cancelled = false;
+    setRoadGeometry(null);
     const coordsQuery = orderedStops
       .map((s) => `${parseFloat(s.stopPointLongitude)},${parseFloat(s.stopPointLatitude)}`)
       .join(';');
@@ -47,7 +48,7 @@ export function useRouteMapModal({ isOpen, route, routeStops = [] }) {
         }
       })
       .catch(() => {
-        // Fallback to straight-line connecting stops
+        if (!cancelled) setRoadGeometry(null);
       });
 
     return () => {

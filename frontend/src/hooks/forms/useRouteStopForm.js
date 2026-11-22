@@ -48,17 +48,29 @@ export function useRouteStopForm({
       );
     } else {
       const initialRouteId = defaultRouteId || (routes.length > 0 ? routes[0].id : '');
+      const assignedIds = new Set(
+        existingRouteStops.filter((rs) => rs.routeId === initialRouteId).map((rs) => rs.stopPointId)
+      );
+      const firstAvailableStop = stops.find((s) => !assignedIds.has(s.id));
+
       setRouteId(initialRouteId);
-      setStopPointId(stops.length > 0 ? stops[0].id : '');
+      setStopPointId(firstAvailableStop ? firstAvailableStop.id : '');
       setSequenceOrder(getNextSequence(initialRouteId));
       setEstimatedMinutes('');
     }
-  }, [isOpen, routeStop, isEdit, defaultRouteId, routes, stops, getNextSequence]);
+  }, [isOpen, routeStop, isEdit, defaultRouteId, routes, stops, existingRouteStops, getNextSequence]);
 
   const handleRouteChange = (newRouteId) => {
     setRouteId(newRouteId);
     if (!isEdit) {
       setSequenceOrder(getNextSequence(newRouteId));
+      const assignedIds = new Set(
+        existingRouteStops.filter((rs) => rs.routeId === newRouteId).map((rs) => rs.stopPointId)
+      );
+      if (assignedIds.has(stopPointId)) {
+        const firstAvailableStop = stops.find((s) => !assignedIds.has(s.id));
+        setStopPointId(firstAvailableStop ? firstAvailableStop.id : '');
+      }
     }
   };
 

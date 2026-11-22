@@ -65,7 +65,6 @@ export function useAttendance() {
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
-    loadData(newDate);
   };
 
   const handleOpenModal = (driverId = '') => {

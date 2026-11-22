@@ -1,6 +1,7 @@
 import TripsTable from './TripsTable';
 import TripModal from './TripModal';
 import { fetchTrips, deleteTrip } from '../../../services/tripService';
+import { getTodayDateString } from '../../../utils/dateUtils';
 import { useLanguage } from '../../../context/useLanguage';
 import { useCrudTab } from '../../../hooks/useCrudTab';
 
@@ -57,7 +58,7 @@ export default function TripsTab({
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleSaved}
         trip={selectedItemToEdit}
-        defaultDate={tripDate || new Date().toISOString().split('T')[0]}
+        defaultDate={tripDate || getTodayDateString()}
       />
     </>
   );

@@ -48,7 +48,7 @@ export default function DriverTripsTable({
   };
 
   const formatDirection = (direction) => {
-    if (!direction) return 'Standard';
+    if (direction === null || direction === undefined || direction === '') return '-';
     const d = direction.toString().toLowerCase();
     if (d === 'outbound' || d === '0') return t.outbound || 'Outbound';
     if (d === 'inbound' || d === '1') return t.inbound || 'Inbound';
@@ -85,7 +85,7 @@ export default function DriverTripsTable({
               <tr>
                 <th className="py-3.5 px-4">{t.route}</th>
                 <th className="py-3.5 px-4">{t.direction}</th>
-                <th className="py-3.5 px-4">{t.buses.slice(0, -2) || t.buses}</th>
+                <th className="py-3.5 px-4">{t.bus || t.buses}</th>
                 <th className="py-3.5 px-4">{t.schedule}</th>
                 <th className="py-3.5 px-4">{t.status}</th>
                 <th className="py-3.5 px-4 text-center">{t.actions}</th>
