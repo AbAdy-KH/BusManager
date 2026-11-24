@@ -1,9 +1,7 @@
-
 using BusManager.Domain.Entities;
 
 namespace BusManager.Application.Common.DTOs
 {
-   
     public record TripListDto
     (
         string TripId,
@@ -16,6 +14,8 @@ namespace BusManager.Application.Common.DTOs
         DateTime ScheduledArrivalTime,
         string Direction,
         DateTime? ActualStartTime = null,
-        DateTime? ActualArrivalTime = null
+        DateTime? ActualArrivalTime = null,
+        string? ServiceCalendarId = null,
+        string? ServiceCalendarName = null
     );
 }

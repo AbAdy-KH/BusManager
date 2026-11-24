@@ -1,6 +1,4 @@
-
 using BusManager.Application.Common.Interfaces;
-using BusManager.Domain.Entities;
 
 namespace BusManager.Infrastructure.Repositories
 {
@@ -11,10 +9,11 @@ namespace BusManager.Infrastructure.Repositories
         public IDriverRepository Driver { get; private set; }
         public IStopPointRepository Stop { get; private set; }
         public ITripRepository Trip { get; private set; }
-
         public IBusDriverRepository BusDriver { get; private set; }
         public IRouteRepository Route { get; private set; }
         public IRouteStopRepository RouteStop { get; private set; }
+        public IServiceCalendarRepository ServiceCalendar { get; private set; }
+        public ICalendarTripTemplateRepository CalendarTripTemplate { get; private set; }
 
         public UnitOfWork(ApplicationDbContext db)
         {
@@ -26,6 +25,8 @@ namespace BusManager.Infrastructure.Repositories
             BusDriver = new BusDriverRepository(db);
             Route = new RouteRepository(db);
             RouteStop = new RouteStopRepository(db);
+            ServiceCalendar = new ServiceCalendarRepository(db);
+            CalendarTripTemplate = new CalendarTripTemplateRepository(db);
         }
 
         public int Save()
@@ -39,7 +40,6 @@ namespace BusManager.Infrastructure.Repositories
                 Console.WriteLine(ex.Message);
                 return 0;
             }
-            
         }
     }
 }

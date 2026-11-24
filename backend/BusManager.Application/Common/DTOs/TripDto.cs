@@ -1,4 +1,3 @@
-
 using BusManager.Domain.Entities;
 
 namespace BusManager.Application.Common.DTOs
@@ -10,6 +9,7 @@ namespace BusManager.Application.Common.DTOs
         DateTime ScheduledStartTime,
         DateTime ScheduledArrivalTime,
         TripDirection Direction, // 0 = Outbound, 1 = Inbound
-        string? Notes
+        string? Notes,
+        string? ServiceCalendarId = null
     );
 }

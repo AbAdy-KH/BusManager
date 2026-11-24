@@ -28,7 +28,7 @@ namespace BusManager.Application.Services.Implementations
 
             var tripList = await _unitOfWork.Trip.GetAll(
                 filter,
-                "BusDriver, BusDriver.Driver, BusDriver.Bus, Route"
+                "BusDriver, BusDriver.Driver, BusDriver.Bus, Route, ServiceCalendar"
             );
 
             var tripListDto = new List<TripListDto>();
@@ -47,7 +47,9 @@ namespace BusManager.Application.Services.Implementations
                         trip.ScheduledArrivalTime,
                         trip.Direction.ToString(),
                         trip.ActualStartTime,
-                        trip.ActualArrivalTime
+                        trip.ActualArrivalTime,
+                        trip.ServiceCalendarId,
+                        trip.ServiceCalendar?.Name
                     )
                 );
             }
@@ -66,6 +68,7 @@ namespace BusManager.Application.Services.Implementations
             {
                 BusDriverId = dto.BusDriverId,
                 RouteId = string.IsNullOrWhiteSpace(dto.RouteId) ? null : dto.RouteId,
+                ServiceCalendarId = string.IsNullOrWhiteSpace(dto.ServiceCalendarId) ? null : dto.ServiceCalendarId,
                 ScheduledStartTime = dto.ScheduledStartTime.ToLocalTime(),
                 ScheduledArrivalTime = dto.ScheduledArrivalTime.ToLocalTime(),
                 Direction = dto.Direction,
@@ -86,6 +89,7 @@ namespace BusManager.Application.Services.Implementations
 
             trip.BusDriverId = dto.BusDriverId;
             trip.RouteId = string.IsNullOrWhiteSpace(dto.RouteId) ? null : dto.RouteId;
+            trip.ServiceCalendarId = string.IsNullOrWhiteSpace(dto.ServiceCalendarId) ? null : dto.ServiceCalendarId;
             trip.ScheduledStartTime = dto.ScheduledStartTime.ToLocalTime();
             trip.ScheduledArrivalTime = dto.ScheduledArrivalTime.ToLocalTime();
             trip.Direction = dto.Direction;

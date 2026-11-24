@@ -1,5 +1,3 @@
-
-
 namespace BusManager.Application.Common.Interfaces
 {
     public interface IUnitOfWork
@@ -11,7 +9,8 @@ namespace BusManager.Application.Common.Interfaces
         IBusDriverRepository BusDriver { get; }
         IRouteRepository Route { get; }
         IRouteStopRepository RouteStop { get; }
+        IServiceCalendarRepository ServiceCalendar { get; }
+        ICalendarTripTemplateRepository CalendarTripTemplate { get; }
         int Save();
-
     }
 }

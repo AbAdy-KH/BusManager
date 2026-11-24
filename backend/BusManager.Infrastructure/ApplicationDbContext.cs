@@ -17,6 +17,8 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<Route> Routes { get; set; }
     public DbSet<RouteStop> RouteStops { get; set; }
     public DbSet<Trip> Trips { get; set; }
+    public DbSet<ServiceCalendar> ServiceCalendars { get; set; }
+    public DbSet<CalendarTripTemplate> CalendarTripTemplates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +35,24 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<RouteStop>()
             .HasKey(rs => new { rs.RouteId, rs.StopPointId });
+
+        modelBuilder.Entity<Trip>()
+            .HasOne(t => t.ServiceCalendar)
+            .WithMany(c => c.Trips)
+            .HasForeignKey(t => t.ServiceCalendarId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<CalendarTripTemplate>()
+            .HasOne(ct => ct.ServiceCalendar)
+            .WithMany(c => c.Templates)
+            .HasForeignKey(ct => ct.ServiceCalendarId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CalendarTripTemplate>()
+            .HasOne(ct => ct.Route)
+            .WithMany()
+            .HasForeignKey(ct => ct.RouteId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         var stop1Id = "11111111-1111-1111-1111-111111111111";
         var stop2Id = "22222222-2222-2222-2222-222222222222";

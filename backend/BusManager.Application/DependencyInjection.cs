@@ -1,9 +1,7 @@
-using BusManager.Application.Common.Interfaces;
 using BusManager.Application.Services;
 using BusManager.Application.Services.Implementations;
 using BusManager.Application.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-
 
 namespace BusManager.Application
 {
@@ -12,7 +10,6 @@ namespace BusManager.Application
         public static IServiceCollection AddApplicationServices(
             this IServiceCollection services)
         {
-
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IBusService, BusService>();
             services.AddScoped<IDriverService, DriverService>();
@@ -21,9 +18,10 @@ namespace BusManager.Application
             services.AddScoped<ITripService, TripService>();
             services.AddScoped<IRouteService, RouteService>();
             services.AddScoped<IRouteStopService, RouteStopService>();
+            services.AddScoped<IServiceCalendarService, ServiceCalendarService>();
+            services.AddScoped<ICalendarTripTemplateService, CalendarTripTemplateService>();
 
             return services;
-            
         }
     }
 }

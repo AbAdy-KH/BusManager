@@ -78,6 +78,55 @@ namespace BusManager.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("BusManager.Domain.Entities.CalendarTripTemplate", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<TimeSpan>("ArrivalTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("BusId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<TimeSpan>("DepartureTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RouteId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ServiceCalendarId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusId");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("RouteId");
+
+                    b.HasIndex("ServiceCalendarId");
+
+                    b.ToTable("CalendarTripTemplates");
+                });
+
             modelBuilder.Entity("BusManager.Domain.Entities.Route", b =>
                 {
                     b.Property<string>("Id")
@@ -148,6 +197,51 @@ namespace BusManager.Infrastructure.Migrations
                             EstimatedMinutesFromStart = 25,
                             SequenceOrder = 3
                         });
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.ServiceCalendar", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Friday")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Monday")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("Saturday")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Sunday")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Thursday")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Tuesday")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Wednesday")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceCalendars");
                 });
 
             modelBuilder.Entity("BusManager.Domain.Entities.StopPoint", b =>
@@ -245,6 +339,9 @@ namespace BusManager.Infrastructure.Migrations
                     b.Property<DateTime>("ScheduledStartTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ServiceCalendarId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -253,6 +350,8 @@ namespace BusManager.Infrastructure.Migrations
                     b.HasIndex("BusDriverId");
 
                     b.HasIndex("RouteId");
+
+                    b.HasIndex("ServiceCalendarId");
 
                     b.ToTable("Trips");
 
@@ -429,6 +528,40 @@ namespace BusManager.Infrastructure.Migrations
                     b.Navigation("Driver");
                 });
 
+            modelBuilder.Entity("BusManager.Domain.Entities.CalendarTripTemplate", b =>
+                {
+                    b.HasOne("BusManager.Domain.Entities.Bus", "Bus")
+                        .WithMany()
+                        .HasForeignKey("BusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusManager.Domain.Entities.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusManager.Domain.Entities.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BusManager.Domain.Entities.ServiceCalendar", "ServiceCalendar")
+                        .WithMany("Templates")
+                        .HasForeignKey("ServiceCalendarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bus");
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Route");
+
+                    b.Navigation("ServiceCalendar");
+                });
+
             modelBuilder.Entity("BusManager.Domain.Entities.RouteStop", b =>
                 {
                     b.HasOne("BusManager.Domain.Entities.Route", "Route")
@@ -460,9 +593,16 @@ namespace BusManager.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("RouteId");
 
+                    b.HasOne("BusManager.Domain.Entities.ServiceCalendar", "ServiceCalendar")
+                        .WithMany("Trips")
+                        .HasForeignKey("ServiceCalendarId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("BusDriver");
 
                     b.Navigation("Route");
+
+                    b.Navigation("ServiceCalendar");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -483,6 +623,13 @@ namespace BusManager.Infrastructure.Migrations
             modelBuilder.Entity("BusManager.Domain.Entities.Route", b =>
                 {
                     b.Navigation("RouteStops");
+                });
+
+            modelBuilder.Entity("BusManager.Domain.Entities.ServiceCalendar", b =>
+                {
+                    b.Navigation("Templates");
+
+                    b.Navigation("Trips");
                 });
 #pragma warning restore 612, 618
         }

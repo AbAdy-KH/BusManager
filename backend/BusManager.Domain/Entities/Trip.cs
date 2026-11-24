@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -6,10 +5,10 @@ namespace BusManager.Domain.Entities
 {
     public enum TripDirection
     {
-        Outbound = 0, // from usniversity to city
-        Inbound = 1 // from city to university 
+        Outbound = 0, // from university to city
+        Inbound = 1   // from city to university
     }
-    
+
     public enum TripStatus
     {
         Scheduled = 0,
@@ -17,10 +16,10 @@ namespace BusManager.Domain.Entities
         Completed = 2,
         Cancelled = 3
     }
-    
+
     public class Trip
     {
-        [Key]        
+        [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [ForeignKey(nameof(BusDriver))]
@@ -31,6 +30,10 @@ namespace BusManager.Domain.Entities
         public string? RouteId { get; set; }
         public Route? Route { get; set; }
 
+        [ForeignKey(nameof(ServiceCalendar))]
+        public string? ServiceCalendarId { get; set; }
+        public ServiceCalendar? ServiceCalendar { get; set; }
+
         public TripStatus Status { get; set; } = TripStatus.Scheduled;
 
         public DateTime ScheduledStartTime { get; set; }
@@ -40,6 +43,6 @@ namespace BusManager.Domain.Entities
         public DateTime? ActualArrivalTime { get; set; }
 
         public TripDirection Direction { get; set; }
-        public string? Notes { get; set; }        
+        public string? Notes { get; set; }
     }
 }
